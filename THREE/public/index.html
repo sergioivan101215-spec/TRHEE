@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <title>Archivo Base</title>
+    <link rel="icon" type="image/png" href="./Assets/logo.png" />
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+ 
+        #boton {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 40px;
+            cursor: pointer;
+        }
+ 
+        #activ {
+            color: rgba(9, 245, 9, 0.87);
+        }
+    </style>
+</head>
+ 
+<body>
+    <div id="boton">
+        Para comenzar da clic en + para activar <p id="activ">( )</p>Mira al rededor usando el mouse, pulsa Esc para
+        parar
+    </div>
+    <canvas id="myCanvas">
+        <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+    </canvas>
+ 
+    <!-- Aquí va todo el código de three.js -->
+    <!-- script type="importmap" importa las librerías necesarias para three.js-->
+    <script type="importmap">
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/PointerLockControls": "./js/PointerLockControls.js",
+            "three/interactive": "./js/three.interactive.js"
+        }
+    }
+    </script>
+    <script type="module">
+        //🗃️🗃️ Mandar llamar a la librería
+        import * as THREE from 'three';
+        import { InteractionManager } from 'three/interactive';
+        import { TWEEN } from './js/tween.module.min.js';
+        import { PointerLockControls } from 'three/PointerLockControls';
+        import { RoundedBoxGeometry } from "./js/RoundedBoxGeometry.js";
+ 
+        import ES01 from "./js/Escenario01.js";
+        import ES02 from "./js/Escenario02.js";
+        import ES03 from "./js/Escenario03.js";
+        import ES04 from "./js/Escenario04.js";
+ 
+        //🕹️🕹️ Renderer - Realiza una conexión entre el código y el canvas
+        var renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('myCanvas'), antialias: true,
+        });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0xE69DFB);
+ 
+        // 🎬 Creando nueva escena - Es el espacio donde se colocan los objetos
+        var scene = new THREE.Scene();
+ 
+        //🎥🎥 Agregar una cámara de perspectiva
+        var camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.2, 10000);
+        scene.add(camera);
+ 
+        //Settings de la cámara
+        camera.position.set(90, 20, 50);
+ 
+        const sizes = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+        const canvas = document.getElementById('myCanvas');
+        window.addEventListener('resize', () => {
+            sizes.width = window.innerWidth;
+            sizes.height = window.innerHeight;
+            camera.aspect = sizes.width / sizes.height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(sizes.width, sizes.height);
+        });
+ 
+        // ── Control de cámara: PointerLockControls (primera persona) ──
+        var controls = new PointerLockControls(camera, renderer.domElement);
+        document.getElementById('activ').onclick = () => {
+            controls.lock();
+        }
+        controls.addEventListener('lock', function () {
+            boton.style.display = 'none';
+        });
+        controls.addEventListener('unlock', function () {
+            boton.style.display = '';
+        });
+ 
+        // Añadir interactionManager
+        var interactionManager = new InteractionManager(
+            renderer,
+            camera,
+            renderer.domElement
+        );
+ 
+        var geometryx = new THREE.BoxGeometry(.0075, .05, .075);
+        var materialx = new THREE.MeshNormalMaterial({ side: THREE.DoubleSide });
+        var meshx = new THREE.Mesh(geometryx, materialx);
+        meshx.position.set(0, 0, -1);
+        var geometryx2 = new THREE.BoxGeometry(.05, .0075, .075);
+        var meshx2 = new THREE.Mesh(geometryx2, materialx);
+        meshx2.position.set(0, 0, -1);
+        camera.add(meshx, meshx2);
+ 
+        //LUCES
+        var light1 = new THREE.AmbientLight(0xffffff, 0.5);
+        light1.position.set(-40, 50, 50);
+        scene.add(light1);
+ 
+        var light2 = new THREE.DirectionalLight(0xffffff, 0.7);
+        light2.position.set(-10, 200, 300);
+        scene.add(light2);
+ 
+        // Espacio para colocar los objetos
+ 
+        const Escenario01 = ES01({ x: 0, y: 0, z: 0 });
+        scene.add(Escenario01);
+ 
+        const Escenario02 = ES02({ x: 0, y: 0, z: 0 });
+        scene.add(Escenario02);
+        Escenario02.position.set(-800, 0, 750);
+        Escenario02.rotation.set(0, 1.57, 0);
+ 
+        const Escenario03 = ES03({ x: 0, y: 0, z: 0 });
+        scene.add(Escenario03);
+        Escenario03.position.set(700, 0, 700);
+        Escenario03.rotation.set(0, -1.57, 0);
+ 
+        const Escenario04 = ES04({ x: 0, y: 0, z: 0 });
+        scene.add(Escenario04);
+        Escenario04.position.set(0, 0, 1450);
+        Escenario04.rotation.set(0, -3.1514, 0);
+ 
+        
+       const figura = Escenario03.getObjectByName("figura");
+const figura2 = Escenario03.getObjectByName("figura2");
+
+const hamm = Escenario02.getObjectByName("hamm");
+const hamm2 = Escenario02.getObjectByName("hamm2");
+
+const cohete = Escenario04.getObjectByName("cohete");
+const nave = Escenario04.getObjectByName("nave");
+ 
+
+       
+            figura.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            figura.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            figura.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: 0, y: 25, z: 50 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(figura);
+      
+ 
+        // ── Interacción: figura2 (Escenario03) ──
+       
+            figura2.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            figura2.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            figura2.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: -180, y: 230, z: -250 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(figura2);
+       
+ 
+        // ── Interacción: hamm / hamm2 (Escenario02) ──
+        
+            hamm.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            hamm.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            hamm.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: -30, y: 20, z: 60 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(hamm);
+       
+ 
+        
+            hamm2.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            hamm2.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            hamm2.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: 250, y: 100, z: -150 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(hamm2);
+        
+ 
+        // ── Interacción: cohete / nave (Escenario04) ──
+        
+            cohete.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            cohete.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            cohete.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: 160, y: 40, z: 220 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(cohete);
+       
+ 
+        
+            nave.addEventListener('mouseover', (event) => {
+                document.body.style.cursor = 'pointer';
+                event.target.scale.set(1.2, 1.2, 1.2);
+            });
+            nave.addEventListener('mouseout', (event) => {
+                document.body.style.cursor = 'default';
+                event.target.scale.set(1, 1, 1);
+            });
+            nave.addEventListener('click', (event) => {
+                var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
+                event.target.scale.set(1.5, 1.5, 1.5);
+                new TWEEN.Tween(coords)
+                    .to({ x: -202, y: 140, z: 300 })
+                    .onUpdate(() => camera.position.set(coords.x, coords.y, coords.z))
+                    .start();
+            });
+            interactionManager.add(nave);
+       
+ 
+        //🎰🎰Rendering y animación
+        requestAnimationFrame(render);
+        function render() {
+ 
+            //🪄🪄 Animación
+            TWEEN.update();
+            interactionManager.update();
+ 
+           
+            if (nave) {
+                nave.position.y += 0.1;
+                nave.rotation.y += 0.01;
+                if (nave.position.y > 90) {
+                    nave.position.y = 80;
+                }
+            }
+ 
+           
+ 
+            //Llamado para renderizar y volver a llamar a la misma función (render)
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+    </script>
+</body>
+ 
+</html>
