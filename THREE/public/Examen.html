@@ -1,0 +1,239 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <title>Practica</title>
+</head>
+<body>
+    
+<canvas id="myCanvas">
+    <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+</canvas>
+
+<!-- Aquí va todo el código de three.js -->
+<!-- script type="importmap" importa las librerías necesarias para three.js-->
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+}
+</script>
+<script type="module"> 
+// Mandar llamar a la librería
+    import * as THREE from 'three'; 
+    import {OrbitControls} from 'three/OrbitControls';
+    import {RoundedBoxGeometry} from  "./js/RoundedBoxGeometry.js";
+    console.log(OrbitControls);
+
+//Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById('myCanvas'), antialias: true,
+    });
+    renderer.setPixelRatio(window.decivePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x22cccc);
+
+
+//  Creando nueva escena - Es el espacio donde se colocan los objetos
+    var scene = new THREE.Scene();
+
+//Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(70,window.innerWidth / window.innerHeight,0.1,2000
+      );
+    scene.add(camera);
+
+    //Settings de la cámara
+    camera.position.set(0, 4, 40);
+
+    // Añadiendo los OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+// Ejes
+var axesHelper = new THREE.AxesHelper(50);
+scene.add(axesHelper);
+
+//grid
+var polargridHelper=new THREE.PolarGridHelper(50,16,50,25);
+//scene.add(polargridHelper);
+
+
+//light
+var light = new THREE.AmbientLight(0xffffff,0.5);
+light.position.set(-40,50,50);
+//scene.add(light);
+
+var light2 = new THREE.DirectionalLight(0xffffff,0.5);
+light.position.set(40,50,50);
+scene.add(light2);
+
+var light3 = new THREE.HemisphereLight(0xffffff,0.4);
+light.position.set(0,50,0);
+scene.add(light3);
+
+
+
+var gridHelper = new THREE.GridHelper(50,50);
+scene.add(gridHelper);
+
+
+// Espacio para colocar los objetos
+var base = new THREE.BoxGeometry(200,0.5,200);
+var colorbase = new THREE.MeshLambertMaterial({color:0xBB0022});
+
+var suelo = new THREE.Mesh(base,colorbase);
+scene.add(suelo);
+
+var cab = new THREE.SphereGeometry(5,20,10);
+var material1= new THREE.MeshLambertMaterial({color:0xffbf7c});
+var cabeza= new THREE.Mesh(cab,material1);
+scene.add(cabeza);
+cabeza.scale.set(1,1.3,0.8);
+
+var oreja1= new THREE.Mesh(cab,material1);
+oreja1.position.set(4,0,0);
+oreja1.scale.set(0.5,0.4,0.25);
+//scene.add(oreja1);
+
+var oreja2= new THREE.Mesh(cab,material1);
+oreja2.position.set(-4,0,0);
+oreja2.scale.set(0.5,0.4,0.25);
+//scene.add(oreja2);
+
+var material2= new THREE.MeshLambertMaterial({color:0xffffff});
+var ojo= new THREE.Mesh(cab,material2);
+//scene.add(ojo);
+ojo.scale.set(0.3,0.3,0.1);
+ojo.position.set(-2,1,3.4);
+ojo.rotation.set(0,-0.4,0);
+
+var ojo2= new THREE.Mesh(cab,material2);
+//scene.add(ojo2);
+ojo2.scale.set(0.3,0.3,0.1);
+ojo2.position.set(2,1,3.4);
+ojo2.rotation.set(0,0.4,0);
+
+
+var material3= new THREE.MeshLambertMaterial({color:0x5e3a00});
+
+var pup= new THREE.Mesh(cab,material3);
+//scene.add(pup);
+pup.scale.set(0.15,0.15,0.1);
+pup.position.set(1.5,1,3.7);
+
+var pup1= new THREE.Mesh(cab,material3);
+//scene.add(pup1);
+pup1.scale.set(0.15,0.15,0.1);
+pup1.position.set(-1.5,1,3.7);
+
+var rostro = new THREE.Group();
+rostro.add(cabeza,ojo,ojo2,oreja1,oreja2,pup,pup1);
+scene.add(rostro);
+rostro.position.set(0,20,0);
+
+var material5= new THREE.MeshLambertMaterial({color:0xffcd00});
+
+var cuer = new THREE.CylinderGeometry(4,8,12,20,20);
+var cuerpo= new THREE.Mesh(cuer,material5);
+scene.add(cuerpo);
+cuerpo.position.set(0,10.3,0);
+cuerpo.scale.set(0.9,1,0.7);
+
+var material4= new THREE.MeshLambertMaterial({color:0x5e3a00});
+var cab = new THREE.SphereGeometry(4,20,20);
+var cabello= new THREE.Mesh(cab,material4);
+scene.add(cabello);
+cabello.position.set(0,23,-0.2);
+cabello.scale.set(1,0.6,0.8);
+
+
+var cabello2= new THREE.Mesh(cab,material4);
+scene.add(cabello2);
+cabello2.position.set(0,22.5,-1);
+cabello2.scale.set(1,1,1);
+
+var bra = new THREE.SphereGeometry(5,20,10);
+var brazo= new THREE.Mesh(cab,material5);
+scene.add(brazo);
+brazo.scale.set(0.5,1,0.5 );
+brazo.position.set(-5,12,1); 
+brazo.rotation.set(-0.4,0,0);
+
+var brazo1= new THREE.Mesh(cab,material5);
+scene.add(brazo1);
+brazo1.scale.set(0.5,1,0.5 );
+brazo1.position.set(5,12,1); 
+brazo1.rotation.set(-0.4,0,0);
+
+var brazo2= new THREE.Mesh(cab,material5);
+scene.add(brazo2);
+brazo2.scale.set(0.45,1,0.5 );
+brazo2.position.set(-2,10.1,3.5); 
+brazo2.rotation.set(0,-0.4,-1.6);
+
+var brazo3= new THREE.Mesh(cab,material5);
+scene.add(brazo3);
+brazo3.scale.set(0.45,1,0.5 );
+brazo3.position.set(2,10.1,3.5); 
+brazo3.rotation.set(0,0.4,1.6);
+
+
+
+var material6= new THREE.MeshLambertMaterial({color:0x5e3a00});
+var som = new THREE.TorusGeometry(5,2,20,20);
+var sombre= new THREE.Mesh(som,material6);
+scene.add(sombre);
+sombre.position.set(0,23,-0.8);
+sombre.scale.set(1,1,0.3);
+sombre.rotation.set(0.8,0,0);
+
+
+var som1 = new THREE.TorusGeometry(4,1.8,5,5);
+var sombre1= new THREE.Mesh(som1,material6);
+scene.add(sombre1);
+sombre1.position.set(0,23,-2);
+sombre1.scale.set(1,1,1);
+sombre1.rotation.set(0.8,0,0);
+
+var material7= new THREE.MeshLambertMaterial({color:0x3d85c6});
+
+var cint = new THREE.CylinderGeometry(8,8,12,20,20);
+var cintura= new THREE.Mesh(cint,material7);
+scene.add(cintura);
+cintura.position.set(0,2.5,0);
+cintura.scale.set(0.9,0.3,0.7);
+
+var material8= new THREE.MeshLambertMaterial({color:0xff0000});
+
+var pan = new THREE.CylinderGeometry(4.5,5,12,20,20);
+var pand= new THREE.Mesh(pan,material8);
+scene.add(pand);
+pand.position.set(0,10,0);
+pand.scale.set(0.9,1,0.7);
+
+
+
+
+
+
+//🎰🎰Rendering y animación
+    requestAnimationFrame(render);
+    function render() {
+
+    //🪄🪄 Animación - 
+//cubo.rotation.x += 0.02
+//cubo.rotation.y += 0.02
+//cubo.rotation.z += 0.02
+    //🎮🎮Actualización del OrbitControls para generar la suavidad de movimiento
+    controls.update();
+
+    //Llamado para renderizar y volver a llamar a la misma función (render)
+    renderer.render(scene, camera);
+    requestAnimationFrame(render);
+    }
+</script>
+</body>
+</html>

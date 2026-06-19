@@ -1,0 +1,376 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <title>Practica</title>
+</head>
+<body>
+    
+<canvas id="myCanvas">
+    <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+</canvas>
+
+<!-- Aquí va todo el código de three.js -->
+<!-- script type="importmap" importa las librerías necesarias para three.js-->
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/OrbitControls": "./js/OrbitControls.js" 
+        }
+}
+</script>
+<script type="module"> 
+// Mandar llamar a la librería
+    import * as THREE from 'three'; 
+    import {OrbitControls} from 'three/OrbitControls';
+    import {RoundedBoxGeometry} from  "./js/RoundedBoxGeometry.js";
+    console.log(OrbitControls);
+
+//Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById('myCanvas'), antialias: true,
+    });
+    renderer.setPixelRatio(window.decivePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xFFfA9F);
+
+
+//  Creando nueva escena - Es el espacio donde se colocan los objetos
+    var scene = new THREE.Scene();
+
+//Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(70,window.innerWidth / window.innerHeight,0.1,5000
+      );
+    scene.add(camera);
+
+    //Settings de la cámara
+    camera.position.set(0, 30, 200);
+
+    // Añadiendo los OrbitControls
+    var controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+// Ejes
+var axesHelper = new THREE.AxesHelper(50);
+//scene.add(axesHelper);
+
+//grid
+var polargridHelper=new THREE.PolarGridHelper(50,16,50,25);
+//scene.add(polargridHelper);
+
+
+//light
+var light = new THREE.AmbientLight(0xffffff,0.5);
+light.position.set(-40,50,50);
+//scene.add(light);
+
+var light2 = new THREE.DirectionalLight(0xffffff,1);
+light2.position.set(-30,20,20);
+light2.target.position.set(0,0,0);
+scene.add(light2);
+
+var light3 = new THREE.DirectionalLight(0xffffff,0.5);
+light3.position.set(30,20,20);
+light3.target.position.set(0,0,0);
+scene.add(light3);
+
+
+var light3 = new THREE.HemisphereLight(0xffffff,0.4);
+light.position.set(0,50,0);
+//scene.add(light3);
+
+var pl = new THREE.PointLight(0xf000f0,3,20,0.9);
+pl.position.set(-15,18,0);
+//scene.add(pl);
+var helper1 = new THREE.PointLightHelper(pl);
+//scene.add(helper1);
+
+
+//SPOT LIGHT
+
+
+
+//SOMBRA
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
+light2.castShadow = true;
+light2.shadow.bias = 0.01;
+light2.shadow.mapSize.width = 1024;
+light2.shadow.mapSize.height = 1024;
+
+light2.shadow.camera.top = 35;
+light2.shadow.camera.bottom = -25;
+light2.shadow.camera.left =-50;
+light2.shadow.camera.right = 50;
+light2.shadow.camera.visible = true;
+
+
+var directionalHelper = new THREE.CameraHelper(light2.shadow.camera);
+//scene.add(directionalHelper);
+
+
+// Espacio para colocar los objetos
+var base = new THREE.BoxGeometry(700,0.5,700);
+
+var colorbase = new THREE.MeshLambertMaterial({color:0x785412});
+var texturasuelo=new THREE.TextureLoader().load("./Assets/suelo.jpg");
+var materialTs=new THREE.MeshLambertMaterial({map:texturasuelo});
+texturasuelo.wrapS=THREE.RepeatWraaping;
+texturasuelo.wrapT=THREE.RepeatWraaping;
+texturasuelo.repeat.set(15,15);
+
+
+
+var suelo = new THREE.Mesh(base,materialTs);
+
+scene.add(suelo);
+////////////////////
+suelo.receiveShadow = true;
+var pareda = new THREE.BoxGeometry(700,500,0.5);
+var texturapared=new THREE.TextureLoader().load("./Assets/gran.jpg");
+var materiala=new THREE.MeshLambertMaterial({map:texturapared});
+texturapared.wrapS=THREE.RepeatWraaping;
+texturapared.wrapT=THREE.RepeatWraaping;
+texturapared.repeat.set(2,2);
+
+
+
+
+var pared = new THREE.Mesh(pareda,materiala);
+pared.position.set(0,250,-350);
+scene.add(pared);
+
+
+
+
+
+
+
+
+
+var tabla = new THREE.BoxGeometry(10,20,700);
+var ttabla= new THREE.MeshLambertMaterial({color:0xE0E0E0});
+var borde = new THREE.Mesh(tabla,ttabla);
+
+//scene.add(borde);
+
+var ttl = new THREE.BoxGeometry(100,10,700);
+var tttl= new THREE.MeshLambertMaterial({color:0xE0E0E0});
+var tmue = new THREE.Mesh(ttl,tttl);
+//scene.add(tmue);
+
+
+
+
+var par2 = pared.clone();
+par2.rotation.set(0,1.5756,0);
+par2.position.set(350,250,0);
+scene.add(par2);
+
+var par3 = pared.clone();
+par3.rotation.set(0,1.5756,0);
+par3.position.set(-350,250,0);
+scene.add(par3);
+
+
+var br2 = borde.clone();
+br2.rotation.set(0,1.5756,0);
+br2.position.set(-350,0,-350);
+//scene.add(br2);
+
+var br3 = borde.clone();
+
+br3.position.set(-700,0,0);
+//scene.add(br3);
+
+
+var tl1 = tmue.clone();
+tl1.position.set(0,100,90);
+tl1.scale.set(1,1,0.75);
+//scene.add(tl1);
+
+
+
+
+var tl2 = tmue.clone();
+tl2.position.set(0,200,0);
+//scene.add(tl2);
+
+var tl3 = tmue.clone();
+tl3.position.set(0,400,0);
+//scene.add(tl3);
+
+var tl4 = tmue.clone();
+tl4.rotation.set(1.5756,0,0);
+tl4.position.set(0,200,350);
+tl4.scale.set(1,1,0.58);
+//scene.add(tl4);
+
+var tl5 = tmue.clone();
+tl5.rotation.set(1.5756,0,0);
+tl5.position.set(0,200,-350);
+tl5.scale.set(1,1,0.58);
+//scene.add(tl5);
+
+
+var tl6 = tmue.clone();
+tl6.rotation.set(1.5756,0,0);
+tl6.position.set(0,100,-170);
+tl6.scale.set(1,1,0.3);
+//scene.add(tl6);
+
+
+var vay = new THREE.Group();
+vay.add(br2,br3,borde);
+scene.add(vay);
+
+vay.position.set(350,200,0);
+
+
+var mueble = new THREE.Group();
+mueble.add(tl1,tl2,tl3,tl4,tl5,tl6,tmue);
+scene.add(mueble);
+
+mueble.position.set(0,0,0);
+
+
+
+
+// ==========================
+// JUGUETES Y CAJAS
+// dentro del mueble
+// ==========================
+
+// ------------------
+// caja 1
+// ------------------
+var cj1 = new THREE.BoxGeometry(60,40,40);
+var tcj1 = new THREE.MeshLambertMaterial({color:0xff0000});
+var caja1 = new THREE.Mesh(cj1,tcj1);
+scene.add(caja1);
+caja1.position.set(-90,120,80);
+
+// caja 2
+var cj2 = new THREE.BoxGeometry(40,35,60);
+var tcj2 = new THREE.MeshLambertMaterial({color:0x00ff00});
+var caja2 = new THREE.Mesh(cj2,tcj2);
+scene.add(caja2);
+caja2.position.set(80,120,70);
+
+// caja 3
+var cj3 = new THREE.BoxGeometry(80,30,35);
+var tcj3 = new THREE.MeshLambertMaterial({color:0x0000ff});
+var caja3 = new THREE.Mesh(cj3,tcj3);
+scene.add(caja3);
+caja3.position.set(0,210,0);
+
+// ------------------
+// pelota
+// ------------------
+var pg = new THREE.SphereGeometry(18,20,20);
+var tp = new THREE.MeshLambertMaterial({color:0xffff00});
+var pelota = new THREE.Mesh(pg,tp);
+scene.add(pelota);
+pelota.position.set(-10,120,-80);
+
+// ------------------
+// robot simple
+// ------------------
+var rg = new THREE.BoxGeometry(25,35,20);
+var tr = new THREE.MeshLambertMaterial({color:0xE0E0E0});
+var robot = new THREE.Mesh(rg,tr);
+scene.add(robot);
+robot.position.set(90,205,-70);
+
+var rc = new THREE.SphereGeometry(10,20,20);
+var cabeza = new THREE.Mesh(rc,tr);
+scene.add(cabeza);
+cabeza.position.set(90,232,-70);
+
+// ------------------
+// carrito simple
+// ------------------
+var car = new THREE.BoxGeometry(45,15,25);
+var tcar = new THREE.MeshLambertMaterial({color:0xff8800});
+var carro = new THREE.Mesh(car,tcar);
+scene.add(carro);
+carro.position.set(-100,210,-70);
+
+var ll = new THREE.SphereGeometry(6,20,20);
+var tll = new THREE.MeshLambertMaterial({color:0x000000});
+
+var ll1 = new THREE.Mesh(ll,tll);
+scene.add(ll1);
+ll1.position.set(-115,198,-58);
+
+var ll2 = ll1.clone();
+scene.add(ll2);
+ll2.position.set(-85,198,-58);
+
+var ll3 = ll1.clone();
+scene.add(ll3);
+ll3.position.set(-115,198,-82);
+
+var ll4 = ll1.clone();
+scene.add(ll4);
+ll4.position.set(-85,198,-82);
+
+// ------------------
+// oso simple
+// ------------------
+var og = new THREE.SphereGeometry(15,20,20);
+var toso = new THREE.MeshLambertMaterial({color:0x8B5A2B});
+var oso = new THREE.Mesh(og,toso);
+scene.add(oso);
+oso.position.set(0,120,80);
+
+var oc1 = new THREE.Mesh(og,toso);
+scene.add(oc1);
+oc1.scale.set(0.4,0.4,0.4);
+oc1.position.set(-8,135,90);
+
+var oc2 = oc1.clone();
+scene.add(oc2);
+oc2.position.set(8,135,90);
+
+
+var grobot = new THREE.Group();
+grobot.add(robot,cabeza);
+scene.add(grobot);
+grobot.scale.set(1.5,1.5,1.5);
+grobot.position.set(0,-85,240);
+
+var gcarro = new THREE.Group();
+gcarro.add(carro,ll1,ll2,ll3,ll4);
+scene.add(gcarro);
+
+gcarro.scale.set(1.5,1.5,1.5);
+gcarro.position.set(150,-85,0);
+
+var goso = new THREE.Group();
+goso.add(oso,oc1,oc2);
+scene.add(goso);
+goso.scale.set(1.5,1.5,1.5);
+goso.position.set(0,-48,0);
+
+
+//🎰🎰Rendering y animación
+    requestAnimationFrame(render);
+    function render() {
+
+    //🪄🪄 Animación - 
+
+
+    //🎮🎮Actualización del OrbitControls para generar la suavidad de movimiento
+    controls.update();
+
+    //Llamado para renderizar y volver a llamar a la misma función (render)
+    renderer.render(scene, camera);
+    requestAnimationFrame(render);
+    }
+</script>
+</body>
+</html>

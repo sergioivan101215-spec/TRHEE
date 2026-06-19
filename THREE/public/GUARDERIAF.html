@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Práctica Textura multiple, icon y canvas</title>
+    <link rel="icon" type="image/png" href="./img/hamm.png"/>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        #boton {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 40px;
+            cursor: pointer;
+        }
+        #activ {
+            color: rgba(9, 245, 9, 0.87);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="boton">
+        Para comenzar da clic en + para activar <p id="activ">(  )</p>Mira al rededor usando el mouse, pulsa Esc para parar
+    </div>
+
+    <canvas id="myCanvas"></canvas>
+
+    <script type="importmap">
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/PointerLockControls": "./js/PointerLockControls.js",
+            "three/interactive": "./js/three.interactive.js"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { InteractionManager } from 'three/interactive';
+        import { TWEEN } from './js/tween.module.min.js';
+        import { PointerLockControls } from 'three/PointerLockControls';
+        import { RoundedBoxGeometry } from "./js/RoundedBoxGeometry.js";
+        import { TextGeometry } from "./js/TextGeometry.js";
+        import { FontLoader } from "./js/FontLoader.js";
+
+        var renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('myCanvas'), antialias: true,
+        });
+        renderer.setPixelRatio(window.decivePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x0166D6);
+
+        var scene = new THREE.Scene();
+
+        var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.2, 20000);
+        scene.add(camera);
+        camera.position.set(40, 20, 80);
+
+        const sizes = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+        const canvas = document.getElementById('myCanvas');
+        window.addEventListener('resize', () => {
+            sizes.width = window.innerWidth;
+            sizes.height = window.innerHeight;
+            camera.aspect = sizes.width / sizes.height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(sizes.width, sizes.height);
+        });
+
+        var controls = new PointerLockControls(camera, renderer.domElement);
+        document.getElementById('activ').onclick = () => {
+            controls.lock();
+        }
+        controls.addEventListener('lock', function () {
+            boton.style.display = 'none';
+        });
+        controls.addEventListener('unlock', function () {
+            boton.style.display = '';
+        });
+
+        var interactionManager = new InteractionManager(
+            renderer,
+            camera,
+            renderer.domElement
+        );
+
+        var geometryx = new THREE.BoxGeometry(.0075, .05, .075);
+        var materialx = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
+        var meshx = new THREE.Mesh(geometryx, materialx);
+        meshx.position.set(0,0,-1);
+        var geometryx2 = new THREE.BoxGeometry(.05, .0075, .075);
+        var meshx2 = new THREE.Mesh(geometryx2, materialx);
+        meshx2.position.set(0,0,-1);
+        camera.add(meshx, meshx2);
+
+        var base = new THREE.BoxGeometry(800, 1, 800);
+        var tps = new THREE.TextureLoader().load("./img/piso.jpg");
+        var mtex = new THREE.MeshLambertMaterial({ map: tps});
+        var meshbase = new THREE.Mesh(base, mtex);
+        meshbase.receiveShadow = true;
+        scene.add(meshbase);
+        meshbase.position.set(0, -1, 50);
+
+        var light1 = new THREE.AmbientLight(0xffffff, 0.5);
+        light1.position.set(-40, 50, 100);
+        scene.add(light1);
+
+        var light2 = new THREE.DirectionalLight(0xffffff, 0.7);
+        light2.position.set(-10, 200, 300);
+        scene.add(light2);
+
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
+
+        light2.castShadow = true;
+        light2.shadow.bias = 0.01;
+        light2.shadow.mapSize.width = 1024;
+        light2.shadow.mapSize.height = 1024;
+
+        light2.shadow.camera.top = 100;
+        light2.shadow.camera.bottom = -50;
+        light2.shadow.camera.left = -200;
+        light2.shadow.camera.right = 200;
+        light2.shadow.camera.visible = true;
+
+        var directionalHelper = new THREE.CameraHelper(light2.shadow.camera);
+        scene.add(light2);
+
+        var tg= new THREE.SphereGeometry(50,18);
+        var tm= new THREE.MeshLambertMaterial({color: 0xDCA014});
+        var tap= new THREE.Mesh(tg,tm);
+        scene.add(tap);
+        tap.castShadow = true;
+        tap.scale.set(1,0.01,1);
+
+        var tgc= new THREE.SphereGeometry(35,18);
+        var tmc= new THREE.MeshLambertMaterial({color: 0xE0BD744});
+        var tapc= new THREE.Mesh(tgc,tmc);
+        scene.add(tapc);
+        tapc.castShadow = true;
+        tapc.position.set(0,0.4,0);
+        tapc.scale.set(1,0.01,1);
+
+        var tgco= new THREE.SphereGeometry(20,18);
+        var tmco= new THREE.MeshLambertMaterial({color: 0xDCA014});
+        var tapco= new THREE.Mesh(tgco,tmco);
+        scene.add(tapco);
+        tapco.castShadow = true;
+        tapco.position.set(0,1,0);
+        tapco.scale.set(1,0.01,1);
+
+        var hg= new THREE.OctahedronGeometry(35,0);
+        var hm= new THREE.MeshLambertMaterial({color: 0xA68D56});
+        var hex= new THREE.Mesh(hg,hm);
+        scene.add(hex);
+        hex.castShadow = true;
+        hex.position.set(0,0.7,0);
+        hex.scale.set(0.2,0.01,1);
+
+        var hg2= hex.clone();
+        scene.add(hg2);
+        hg2.rotation.set(0,0.5,0);
+
+        var hg3= hex.clone();
+        scene.add(hg3);
+        hg3.rotation.set(0,1,0);
+
+        var hg4= hex.clone();
+        scene.add(hg4);
+        hg4.rotation.set(0,1.5,0);
+
+        var hg5= hex.clone();
+        scene.add(hg5);
+        hg5.rotation.set(0,2,0);
+
+        var hg6= hex.clone();
+        scene.add(hg6);
+        hg6.rotation.set(0,2.5,0);
+
+        var grupotapetepatron= new THREE.Group();
+        grupotapetepatron.add(tap,tapc,tapco,hex,hg2,hg3,hg4,hg5,hg6);
+        scene.add(grupotapetepatron);
+        grupotapetepatron.position.set(-100,0,0);
+        grupotapetepatron.scale.set(2.5,2.5,2.5);
+
+        var tg2= new THREE.BoxGeometry(10,1,10);
+        var tm2= new THREE.MeshLambertMaterial({color: 0x00FF00});
+        var tap2= new THREE.Mesh(tg2,tm2);
+        scene.add(tap2);
+        tap2.castShadow = true;
+        tap2.position.set(-5,0.1,143);
+        tap2.rotation.set(0,0.5,0);
+
+        var tg3= new THREE.BoxGeometry(10,1,10);
+        var tm3= new THREE.MeshLambertMaterial({color: 0xFF0000});
+        var tap3= new THREE.Mesh(tg3,tm3);
+        scene.add(tap3);
+        tap3.castShadow = true;
+        tap3.position.set(10,0.1,150);
+
+        var tg4= new THREE.BoxGeometry(10,1,10);
+        var tm4= new THREE.MeshLambertMaterial({color: 0x0000FF});
+        var tap4= new THREE.Mesh(tg4,tm4);
+        scene.add(tap4);
+        tap4.castShadow = true;
+        tap4.position.set(20,0.1,150);
+
+        var tg5= new THREE.BoxGeometry(10,1,10);
+        var tm5= new THREE.MeshLambertMaterial({color: 0xFFFF00});
+        var tap5= new THREE.Mesh(tg5,tm5);
+        scene.add(tap5);
+        tap5.castShadow = true;
+        tap5.position.set(30,0.1,150);
+
+        var tg6= new THREE.BoxGeometry(10,1,10);
+        var tm6= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap6= new THREE.Mesh(tg6,tm6);
+        scene.add(tap6);
+        tap6.castShadow = true;
+        tap6.position.set(0,0.1,160);
+
+        var tg7= new THREE.BoxGeometry(10,1,10);
+        var tm7= new THREE.MeshLambertMaterial({color: 0x00FFFF});
+        var tap7= new THREE.Mesh(tg7,tm7);
+        scene.add(tap7);
+        tap7.castShadow = true;
+        tap7.position.set(10,0.1,160);
+
+        var tg8= new THREE.BoxGeometry(10,1,10);
+        var tm8= new THREE.MeshLambertMaterial({color: 0xFFFF00});
+        var tap8= new THREE.Mesh(tg8,tm8);
+        scene.add(tap8);
+        tap8.castShadow = true;
+        tap8.position.set(20,0.1,160);
+
+        var tg9= new THREE.BoxGeometry(10,1,10);
+        var tm9= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap9= new THREE.Mesh(tg9,tm9);
+        scene.add(tap9);
+        tap9.castShadow = true;
+        tap9.position.set(30,0.1,160);
+
+        var tg10= new THREE.BoxGeometry(10,1,10);
+        var tm10= new THREE.MeshLambertMaterial({color: 0x00FFFF});
+        var tap10= new THREE.Mesh(tg10,tm10);
+        scene.add(tap10);
+        tap10.castShadow = true;
+        tap10.position.set(0,0.1,170);
+
+        var tg11= new THREE.BoxGeometry(10,1,10);
+        var tm11= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap11= new THREE.Mesh(tg11,tm11);
+        scene.add(tap11);
+        tap11.castShadow = true;
+        tap11.position.set(10,0.1,170);
+
+        var tg12= new THREE.BoxGeometry(10,1,10);
+        var tm12= new THREE.MeshLambertMaterial({color: 0xFFFF00});
+        var tap12= new THREE.Mesh(tg12,tm12);
+        scene.add(tap12);
+        tap12.castShadow = true;
+        tap12.position.set(20,0.1,170);
+
+        var tg13= new THREE.BoxGeometry(10,1,10);
+        var tm13= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap13= new THREE.Mesh(tg13,tm13);
+        scene.add(tap13);
+        tap13.castShadow = true;
+        tap13.position.set(30,0.1,170);
+
+        var tg14= new THREE.BoxGeometry(10,1,10);
+        var tm14= new THREE.MeshLambertMaterial({color: 0xFFFF00});
+        var tap14= new THREE.Mesh(tg14,tm14);
+        scene.add(tap14);
+        tap14.castShadow = true;
+        tap14.position.set(0,0.1,180);
+
+        var tg15= new THREE.BoxGeometry(10,1,10);
+        var tm15= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap15= new THREE.Mesh(tg15,tm15);
+        scene.add(tap15);
+        tap15.castShadow = true;
+        tap15.position.set(10,0.1,180);
+
+        var tg16= new THREE.BoxGeometry(10,1,10);
+        var tm16= new THREE.MeshLambertMaterial({color: 0x00FFFF});
+        var tap16= new THREE.Mesh(tg16,tm16);
+        scene.add(tap16);
+        tap16.castShadow = true;
+        tap16.position.set(20,0.1,180);
+
+        var tg17= new THREE.BoxGeometry(10,1,10);
+        var tm17= new THREE.MeshLambertMaterial({color: 0xFF00FF});
+        var tap17= new THREE.Mesh(tg17,tm17);
+        scene.add(tap17);
+        tap17.castShadow = true;
+        tap17.position.set(30,0.1,180);
+
+        var tga18= new THREE.BoxGeometry(70,0.1,50);
+        var tma18= new THREE.MeshLambertMaterial({color: 0x5478D6});
+        var tpa18= new THREE.Mesh(tga18,tma18);
+        scene.add(tpa18);
+        tpa18.castShadow = true;
+        tpa18.position.set(100,0.001,30);
+
+        var tga19= new THREE.BoxGeometry(50,0.1,30);
+        var tma19= new THREE.MeshLambertMaterial({color: 0x7FA2D6});
+        var tpa19= new THREE.Mesh(tga19,tma19);
+        scene.add(tpa19);
+        tpa19.castShadow = true;
+        tpa19.scale.set(0.8,1,0.8);
+        tpa19.position.set(100,0.09,30);
+
+        var tga20= new THREE.BoxGeometry(70,0.1,50);
+        var tma20= new THREE.MeshLambertMaterial({color: 0x5478D6});
+        var tpa20= new THREE.Mesh(tga20,tma20);
+        scene.add(tpa20);
+        tpa20.castShadow = true;
+        tpa20.position.set(100,0.19,-30);
+
+        var tga21= new THREE.BoxGeometry(50,0.1,30);
+        var tma21= new THREE.MeshLambertMaterial({color: 0x7FA2D6});
+        var tpa21= new THREE.Mesh(tga21,tma21);
+        scene.add(tpa21);
+        tpa21.castShadow = true;
+        tpa21.position.set(100,0.3,-30);
+        tpa21.scale.set(0.8,1,0.8);
+
+        var grupotapetesazules= new THREE.Group();
+        grupotapetesazules.add(tpa18,tpa19,tpa20,tpa21);
+        scene.add(grupotapetesazules);
+        grupotapetesazules.position.set(0,0,0);
+        grupotapetesazules.scale.set(2,2,2);
+
+        var grupotapetes= new THREE.Group();
+        grupotapetes.add(tap2,tap3,tap4,tap5,tap6,tap7,tap8,tap9,tap10,tap11,tap12,tap13,tap14,tap15,tap16,tap17);
+        scene.add(grupotapetes);
+        grupotapetes.position.set(0,0,-550);
+        grupotapetes.scale.set(5,1,5);
+
+        var rosa = new THREE.MeshLambertMaterial({color:0xE09082});
+        var narizg =new THREE.CylinderGeometry(5.5,6,5,50);
+        var nariz=new THREE.Mesh(narizg,rosa);
+        scene.add(nariz);
+        nariz.position.set(0,37,10);
+        nariz.rotation.set(1.57,0,0);
+
+        var bolang= new THREE.SphereGeometry(5.5);
+        var bolan=new THREE.Mesh(bolang,rosa);
+        scene.add(bolan);
+        bolan.position.set(0,37,12.5);
+        bolan.scale.set(1,1,0.2);
+
+        var cabg= new THREE.SphereGeometry(15,40,40);
+        var cabeza= new THREE.Mesh(cabg,rosa);
+        scene.add(cabeza);
+        cabeza.scale.set(1,0.9,0.7);
+        cabeza.position.set(0,40,0);
+
+        var cachete1=cabeza.clone();
+        cachete1.scale.set(1.2,0.6,0.9);
+        cachete1.position.set(0,40,0);
+
+        var negro=new THREE.MeshLambertMaterial({color:0x000000});
+        var ojog=new THREE.SphereGeometry(2);
+        var ojo=new THREE.Mesh(ojog,negro);
+        scene.add(ojo);
+        ojo.position.set(-3,45,8);
+
+        var ojo2=ojo.clone();
+        scene.add(ojo2);
+        ojo2.position.set(3,45,8);
+
+        var cejag=new THREE.SphereGeometry(3);
+        var ceja=new THREE.Mesh(cejag,negro);
+        scene.add(ceja);
+        ceja.scale.set(1,0.1,0.3);
+        ceja.rotation.set(-0.40,-0.30,0.30);
+        ceja.position.set(-5,48,7);
+
+        var cejag2=new THREE.SphereGeometry(3);
+        var ceja2=new THREE.Mesh(cejag2,negro);
+        scene.add(ceja2);
+        ceja2.scale.set(1,0.1,0.3);
+        ceja2.rotation.set(-0.40,0.30,-0.30);
+        ceja2.position.set(5,48,7);
+
+        var orejag=new THREE.TorusGeometry(5,2,40,3);
+        var oreja=new THREE.Mesh(orejag,rosa);
+        oreja.scale.set(1,1,1);
+        oreja.position.set(-10,50,0);
+
+        var oreja2=oreja.clone();
+        oreja2.rotation.set(0,0,0.78);
+        oreja2.position.set(11,50,0);
+
+        var grupoorejas= new THREE.Group();
+        grupoorejas.add(oreja,oreja2);
+        scene.add(grupoorejas);
+
+        var rosafuerte= new THREE.MeshLambertMaterial({color:0xE06972});
+        var orejagt=new THREE.TorusGeometry(3,3,40,3);
+        var orejat=new THREE.Mesh(orejagt,rosafuerte);
+        scene.add(orejat);
+        orejat.scale.set(1,1,0.7);
+        orejat.position.set(-10,50,0);
+
+        var oreja2t=orejat.clone();
+        scene.add(oreja2t);
+        oreja2t.scale.set(1,1,0.7);
+        oreja2t.rotation.set(0,0,0.78);
+        oreja2t.position.set(11,50,0);
+
+        var onarg= new THREE.SphereGeometry(2);
+        var onar= new THREE.Mesh(onarg,rosafuerte);
+        scene.add(onar);
+        onar.position.set(-2,37,13.5);
+        onar.scale.set(0.5,1,0.1);
+
+        var onar2=onar.clone();
+        scene.add(onar2);
+        onar2.position.set(2,37,13.5);
+
+        var torsog=new THREE.SphereGeometry(15,40,6);
+        var torso=new THREE.Mesh(torsog,rosa);
+        scene.add(torso);
+        torso.scale.set(1,1,0.7);
+        torso.position.set(0,20,0);
+
+        var torsocg= new THREE.CylinderGeometry(15,17,15,40);
+        var torsoc=new THREE.Mesh(torsocg,rosa);
+        scene.add(torsoc);
+        torsoc.position.set(0,12.5,0);
+        torsoc.scale.set(1,1,0.69);
+
+        var basetorsog=new THREE.SphereGeometry(15);
+        var baset=new THREE.Mesh(basetorsog,rosa);
+        scene.add(baset);
+        baset.position.set(0,5,0);
+        baset.scale.set(1.14,0.5,0.79);
+
+        var bocgg=new THREE.SphereGeometry(5,10,20,1,2);
+        var bocabierta=new THREE.Mesh(bocgg,rosa);
+        scene.add(bocabierta);
+        bocabierta.position.set(0,32.7,6);
+        bocabierta.scale.set(1.5,1.2,1);
+        bocabierta.rotation.set(1.7,0,1.77);
+
+        var bbag=new THREE.TorusGeometry(5,0.5,16,40);
+        var bba=new THREE.Mesh(bbag,rosa);
+        scene.add(bba);
+        bba.position.set(0,33,6.4);
+        bba.scale.set(1.2,1.3,1);
+        bba.rotation.set(1.90,0,0);
+
+        var bog=new THREE.CylinderGeometry(3,4,4,40);
+        var bo=new THREE.Mesh(bog,rosa);
+        scene.add(bo);
+        bo.rotation.set(1.57,0,0);
+        bo.position.set(0,15,10);
+
+        var tabog=new THREE.SphereGeometry(3);
+        var tabo=new THREE.Mesh(tabog,rosafuerte);
+        scene.add(tabo);
+        tabo.scale.set(1,0.2,1);
+        tabo.rotation.set(1.57,0,0);
+        tabo.position.set(0,15,12);
+
+        var bdg=new RoundedBoxGeometry(10,10,6,1,1);
+        var bd=new THREE.Mesh(bdg,rosa);
+        bd.position.set(12.7,22.5,0);
+        bd.rotation.set(0,0,1.1);
+        bd.scale.set(1,1,0.8);
+
+        var mbdg=new THREE.TorusKnotGeometry(2,2,30,46);
+        var mbd=new THREE.Mesh(mbdg,rosa);
+        mbd.position.set(15,17,0);
+
+        var grupobrazo=new THREE.Group();
+        grupobrazo.add(bd,mbd);
+        scene.add(grupobrazo);
+
+        var gpb2=grupobrazo.clone();
+        scene.add(gpb2);
+        gpb2.position.set(0,0,0);
+        gpb2.rotation.set(0,3.14,0);
+
+        var lpg=new RoundedBoxGeometry(1,9,5,1,1);
+        var lp=new THREE.Mesh(lpg,rosafuerte);
+        scene.add(lp);
+        lp.position.set(0,20,-8.1);
+        lp.rotation.set(0.10,0,0);
+
+        var hamm=new THREE.Group();
+        hamm.add(lp,gpb2,grupobrazo,tabo,bo,bba,bocabierta,baset,torsoc,torso,onar,onar2,oreja2t,orejat,grupoorejas,ceja,ceja2,ojo,ojo2,cabeza,bolan,nariz);
+        scene.add(hamm);
+
+      var hamm2=hamm.clone();
+  hamm2.position.set(250,75,-200);
+        scene.add(hamm2);
+
+
+
+
+
+        var naranja=new THREE.MeshLambertMaterial({color:0xE09000});
+        var plata= new THREE.MeshLambertMaterial({color:0x89BBBD});
+        var platamg=new THREE.SphereGeometry(2);
+        var narmg=new THREE.SphereGeometry(1.8);
+        var monedaplata=new THREE.Mesh(platamg,plata);
+        var monedanaranja=new THREE.Mesh(narmg,naranja);
+        var monedacomp=new THREE.Group();
+        monedanaranja.scale.set(1.5,1,1);
+        monedacomp.add(monedaplata,monedanaranja);
+        scene.add(monedacomp);
+        monedacomp.scale.set(0.1,1,1);
+        monedacomp.position.set(0,20,-11);
+
+        var lineaparcheg=new THREE.TorusGeometry(10,0.3,20,20);
+        var lineaparche=new THREE.Mesh(lineaparcheg,negro);
+        scene.add(lineaparche);
+        lineaparche.scale.set(0.9,0.5,1);
+        lineaparche.rotation.set(1.5,-0.68,0);
+        lineaparche.position.set(8.3,48.8,0);
+
+        var parcheg=new THREE.SphereGeometry(4,6,4);
+        var parche=new THREE.Mesh(parcheg,negro);
+        scene.add(parche);
+        parche.scale.set(1,1,0.1);
+        parche.rotation.set(1.57,-0.70,0);
+        parche.position.set(8,49,5);
+
+        var blanco=new THREE.MeshLambertMaterial({color:0xffffff});
+
+        var bolasomg=new THREE.SphereGeometry(4);
+        var bolasom=new THREE.Mesh(bolasomg,negro);
+        scene.add(bolasom);
+        bolasom.scale.set(1.5,1,1.3);
+        bolasom.rotation.set(0.30,0,0);
+        bolasom.position.set(0,52,-3);
+
+        var bolasomg1=new THREE.SphereGeometry(1);
+        var bolasom1=new THREE.Mesh(bolasomg1,blanco);
+        scene.add(bolasom1);
+        bolasom1.scale.set(1.5,0.8,1);
+        bolasom1.rotation.set(0.30,0,0);
+        bolasom1.position.set(0,54,3);
+
+        var lineasomg=new THREE.TorusGeometry(6,1,10,30);
+        var lineasom=new THREE.Mesh(lineasomg,negro);
+        scene.add(lineasom);
+        lineasom.scale.set(1.5,1,1.3);
+        lineasom.rotation.set(1.20,0,0);
+        lineasom.position.set(0,52,-3);
+
+        var basesomg=new THREE.SphereGeometry(7);
+        var basesom=new THREE.Mesh(basesomg,negro);
+        scene.add(basesom);
+        basesom.scale.set(1.3,1,0.1);
+        basesom.rotation.set(1.20,0,0);
+        basesom.position.set(0,52,-3);
+
+        var pierg=new THREE.TorusGeometry(2,0.3,20,20);
+        var pier=new THREE.Mesh(pierg,plata);
+        scene.add(pier);
+        pier.position.set(0,37,14);
+        pier.rotation.set(1.57,0,0);
+
+        var tatuajeg=new THREE.TorusKnotGeometry(1.2,0.3,20,20);
+        var tatuaje=new THREE.Mesh(tatuajeg,negro);
+        scene.add(tatuaje);
+        tatuaje.scale.set(1,1,0.1);
+        tatuaje.rotation.set(1.57,-0.46,0);
+        tatuaje.position.set(15,27,0);
+
+        var tablazul = new THREE.MeshLambertMaterial({color:0x39A2E0});
+        var cajanaranja = new THREE.MeshLambertMaterial({color:0xE0CE7E});
+        var etiquetamat= new THREE.MeshLambertMaterial({color:0xC2DE52});
+
+        var tablag=new THREE.BoxGeometry(90,10,180);
+        var tablagm=new THREE.Mesh(tablag,tablazul);
+        scene.add(tablagm);
+        tablagm.scale.set(1,0.5,1);
+        tablagm.position.set(-300,90,160);
+
+        var tabla1g = new THREE.BoxGeometry(90,10,90);
+        var tabla1m = new THREE.Mesh(tabla1g, tablazul);
+        scene.add(tabla1m);
+        tabla1m.rotation.set(1.57,0,0);
+        tabla1m.scale.set(1,1,1);
+        tabla1m.position.set(-300,45,80);
+
+        var tabla2g = new THREE.BoxGeometry(90,10,90);
+        var tabla2m = new THREE.Mesh(tabla2g, tablazul);
+        scene.add(tabla2m);
+        tabla2m.rotation.set(1.57,0,0);
+        tabla2m.scale.set(1,1,1);
+        tabla2m.position.set(-300,45,240);
+
+        var cajag = new THREE.BoxGeometry(70,5,50);
+        var cajam = new THREE.Mesh(cajag, cajanaranja);
+        cajam.position.set(0,45,0);
+
+        var cajaladoig = new THREE.BoxGeometry(70,5,27);
+        var cajaladoim = new THREE.Mesh(cajaladoig, cajanaranja);
+        cajaladoim.rotation.set(1.57,0,0);
+        cajaladoim.position.set(0,56,-25);
+
+        var cajaladog = new THREE.BoxGeometry(70,5,27);
+        var cajaladom = new THREE.Mesh(cajaladog, cajanaranja);
+        cajaladom.rotation.set(1.57,0,0);
+        cajaladom.position.set(0,56,25);
+
+        var cajatraserog = new THREE.BoxGeometry(27,5,55);
+        var cajatraserom = new THREE.Mesh(cajatraserog, cajanaranja);
+        cajatraserom.rotation.set(0,0,1.57);
+        cajatraserom.position.set(-35,56,0);
+
+        var cajafrontalg = new THREE.BoxGeometry(15,5,55);
+        var cajafrontalm = new THREE.Mesh(cajafrontalg, cajanaranja);
+        cajafrontalm.rotation.set(0,0,1.57);
+        cajafrontalm.position.set(35,50,0);
+
+        var cajafrontal2g = new THREE.BoxGeometry(7,5,55);
+        var cajafrontal2m = new THREE.Mesh(cajafrontal2g, cajanaranja);
+        cajafrontal2m.rotation.set(0,0,1.57);
+        cajafrontal2m.position.set(35,66,0);
+
+        var etiquetag = new THREE.BoxGeometry(4,5,10);
+        var etiquetam = new THREE.Mesh(etiquetag, etiquetamat);
+        etiquetam.rotation.set(0,0,1.57);
+        etiquetam.position.set(37,56,0);
+
+        var grupocaja = new THREE.Group();
+        grupocaja.add(cajam,cajaladoim,cajaladom,cajatraserom,cajafrontalm,cajafrontal2m,etiquetam);
+        scene.add(grupocaja);
+        grupocaja.position.set(-300,-30,110);
+
+        var grupocaja2 = grupocaja.clone();
+        scene.add(grupocaja2);
+        grupocaja2.position.set(-300,-30,210);
+
+        var grupocaja3 = grupocaja.clone();
+        scene.add(grupocaja3);
+        grupocaja3.position.set(-300,20,210);
+
+        var grupocaja4 = grupocaja.clone();
+        scene.add(grupocaja4);
+        grupocaja4.position.set(-300,20,110);
+
+        var grupocaja5 = grupocaja.clone();
+        scene.add(grupocaja5);
+        grupocaja5.position.set(-300,-5,110);
+
+        var grupocaja6 = grupocaja.clone();
+        scene.add(grupocaja6);
+        grupocaja6.position.set(-300,-5,210);
+
+        var paredmaterial = new THREE.MeshLambertMaterial({color:0xFA4D39});
+        var paredg = new THREE.BoxGeometry(800,50,10);
+        var pared1 = new THREE.Mesh(paredg, paredmaterial);
+        scene.add(pared1);
+        pared1.position.set(0,20,450);
+
+        var pared2g = new THREE.BoxGeometry(10,50,800);
+        var pared2 = new THREE.Mesh(pared2g, paredmaterial);
+        scene.add(pared2);
+        pared2.position.set(-400,20,50);
+
+        var pared3g = new THREE.BoxGeometry(10,50,800);
+        var pared3 = new THREE.Mesh(pared3g, paredmaterial);
+        scene.add(pared3);
+        pared3.position.set(400,20,50);
+
+        var pared4g = new THREE.BoxGeometry(800,50,10);
+        var pared4 = new THREE.Mesh(pared4g, paredmaterial);
+        scene.add(pared4);
+        pared4.position.set(0,20,-350);
+
+        var cristal3g = new THREE.BoxGeometry(1,400,800);
+        var cristal3 = new THREE.Mesh(cristal3g, new THREE.MeshLambertMaterial({color:0xB9B9B9, transparent:true, opacity:0.5}));
+        scene.add(cristal3);
+        cristal3.position.set(-400,200,50);
+
+        var cristal4g = new THREE.BoxGeometry(1,400,800);
+        var cristal4 = new THREE.Mesh(cristal4g, new THREE.MeshLambertMaterial({color:0xB9B9B9, transparent:true, opacity:0.5}));
+        scene.add(cristal4);
+        cristal4.position.set(400,200,50);
+
+        var castillog = new THREE.BoxGeometry(20,400,50,40);
+        var castillom = new THREE.MeshLambertMaterial({color:0xFA4D39});
+        var castillo = new THREE.Mesh(castillog,castillom);
+        scene.add(castillo);
+        castillo.position.set(-400,200,-100);
+
+        var castillo2 = castillo.clone();
+        scene.add(castillo2);
+        castillo2.position.set(-400,200,100);
+
+        var castillo3 = castillo.clone();
+        scene.add(castillo3);
+        castillo3.rotation.set(0,0.67,0);
+        castillo3.position.set(350,200,-300);
+        castillo3.scale.set(1,1,3.5);
+
+        var castillo4 = castillo.clone();
+        scene.add(castillo4);
+        castillo4.rotation.set(0,-0.67,0);
+        castillo4.position.set(350,200,400);
+        castillo4.scale.set(1,1,3.5);
+
+        var castillo5 = castillo.clone();
+        scene.add(castillo5);
+        castillo5.rotation.set(0,3.14,0);
+        castillo5.position.set(400,200,-100);
+
+        var castillo6 = castillo.clone();
+        scene.add(castillo6);
+        castillo6.rotation.set(0,3.14,0);
+        castillo6.position.set(400,200,200);
+
+        var castillo7 = castillo.clone();
+        scene.add(castillo7);
+        castillo7.rotation.set(0,0.67,0);
+        castillo7.scale.set(1,1,3.5);
+        castillo7.position.set(-350,200,400);
+
+        var castillo8 = castillo.clone();
+        scene.add(castillo8);
+        castillo8.rotation.set(0,-0.67,0);
+        castillo8.scale.set(1,1,3.5);
+        castillo8.position.set(-350,200,-300);
+
+        var rejillamadera1 = new THREE.BoxGeometry(800,5,5);
+        var materialrejilla = new THREE.MeshLambertMaterial({ color: 0xFA9F69 });
+        var meshrejilla1 = new THREE.Mesh(rejillamadera1, materialrejilla);
+        meshrejilla1.position.set(0,100,450);
+
+        var meshrejilla2 = meshrejilla1.clone();
+        meshrejilla2.position.set(0,300,450);
+
+        var meshrejilla3 = meshrejilla1.clone();
+        meshrejilla3.position.set(0,300,450);
+
+        var gruporejillas = new THREE.Group();
+        gruporejillas.add(meshrejilla1,meshrejilla2,meshrejilla3);
+        scene.add(gruporejillas);
+
+        var meshrejilla4 = meshrejilla1.clone();
+        meshrejilla4.position.set(0,50,-350);
+        scene.add(meshrejilla4);
+
+        var meshrejilla5 = meshrejilla1.clone();
+        meshrejilla5.position.set(0,50,450);
+        scene.add(meshrejilla5);
+
+        var meshrejilla6 = meshrejilla1.clone();
+        meshrejilla6.position.set(-400,50,0);
+        meshrejilla6.rotation.set(0,1.57,0);
+        scene.add(meshrejilla6);
+
+        var meshrejilla7 = meshrejilla1.clone();
+        meshrejilla7.position.set(400,50,0);
+        meshrejilla7.rotation.set(0,1.57,0);
+        scene.add(meshrejilla7);
+
+        var rejillavertical = new THREE.BoxGeometry(5,400,5);
+        var meshrejillavertical1 = new THREE.Mesh(rejillavertical, materialrejilla);
+        meshrejillavertical1.position.set(-400,200,75);
+        scene.add(meshrejillavertical1);
+
+        var meshrejillavertical2 = meshrejillavertical1.clone();
+        meshrejillavertical2.position.set(-400,200,-75);
+        scene.add(meshrejillavertical2);
+
+        var meshrejillavertical3 = meshrejillavertical1.clone();
+        meshrejillavertical3.position.set(400,200,175);
+        scene.add(meshrejillavertical3);
+
+        var meshrejillavertical4 = meshrejillavertical1.clone();
+        meshrejillavertical4.position.set(400,200,-75);
+        scene.add(meshrejillavertical4);
+
+        var meshrejillavertical5 = meshrejillavertical1.clone();
+        meshrejillavertical5.position.set(-400,200,125);
+        scene.add(meshrejillavertical5);
+
+        var meshrejillavertical6 = meshrejillavertical1.clone();
+        meshrejillavertical6.position.set(-400,200,325);
+        scene.add(meshrejillavertical6);
+
+        var meshrejillavertical7 = meshrejillavertical1.clone();
+        meshrejillavertical7.position.set(-400,200,-225);
+        scene.add(meshrejillavertical7);
+
+        var meshrejillavertical8 = meshrejillavertical1.clone();
+        meshrejillavertical8.position.set(-400,200,-125);
+        scene.add(meshrejillavertical8);
+
+        var meshrejillavertical9 = meshrejillavertical1.clone();
+        meshrejillavertical9.position.set(400,200,225);
+        scene.add(meshrejillavertical9);
+
+        var meshrejillavertical10 = meshrejillavertical1.clone();
+        meshrejillavertical10.position.set(400,200,-225);
+        scene.add(meshrejillavertical10);
+
+        var meshrejillavertical11 = meshrejillavertical1.clone();
+        meshrejillavertical11.position.set(400,200,-175);
+        scene.add(meshrejillavertical11);
+
+        var meshrejillavertical12 = meshrejillavertical1.clone();
+        meshrejillavertical12.position.set(400,200,-125);
+        scene.add(meshrejillavertical12);
+
+        var meshrejillavertical13 = meshrejillavertical1.clone();
+        meshrejillavertical13.position.set(400,200,325);
+        scene.add(meshrejillavertical13);
+
+        var meshrejillavertical14 = meshrejillavertical1.clone();
+        meshrejillavertical14.position.set(400,200,275);
+        scene.add(meshrejillavertical14);
+
+        var meshrejillavertical15 = meshrejillavertical1.clone();
+        meshrejillavertical15.position.set(400,200,100);
+        scene.add(meshrejillavertical15);
+
+        var meshrejillavertical16 = meshrejillavertical1.clone();
+        meshrejillavertical16.position.set(400,200,0);
+        scene.add(meshrejillavertical16);
+
+        var meshrejillavertical17 = meshrejillavertical1.clone();
+        meshrejillavertical17.position.set(-400,200,-175);
+        scene.add(meshrejillavertical17);
+
+        var meshrejillavertical18 = meshrejillavertical1.clone();
+        meshrejillavertical18.position.set(-400,200,225);
+        scene.add(meshrejillavertical18);
+
+        var metalg = new THREE.BoxGeometry(200,50,15);
+        var metalm = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var metali = new THREE.Mesh(metalg, metalm);
+        scene.add(metali);
+        metali.position.set(-400,25,0);
+        metali.receiveShadow = true;
+        metali.castShadow = true;
+        metali.rotation.set(0,1.57,0);
+
+        var metal2g = new THREE.BoxGeometry(200,60,15);
+        var metal2m = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var metali2 = new THREE.Mesh(metal2g, metal2m);
+        scene.add(metali2);
+        metali2.position.set(-400,320,0);
+        metali2.receiveShadow = true;
+        metali2.castShadow = true;
+        metali2.rotation.set(0,1.57,0);
+
+        var maderag = new THREE.BoxGeometry(50,300,10);
+        var maderam = new THREE.MeshLambertMaterial({color:0xFA9F69});
+        var madera = new THREE.Mesh(maderag, maderam);
+        scene.add(madera);
+        madera.position.set(-400,200,-50);
+        madera.receiveShadow = true;
+        madera.castShadow = true;
+        madera.rotation.set(0,1.57,0);
+
+        var maderag2 = new THREE.BoxGeometry(50,300,10);
+        var maderam2 = new THREE.MeshLambertMaterial({color:0xFA9F69});
+        var madera2 = new THREE.Mesh(maderag2, maderam2);
+        scene.add(madera2);
+        madera2.position.set(-400,200,50);
+        madera2.receiveShadow = true;
+        madera2.castShadow = true;
+        madera2.rotation.set(0,1.57,0);
+
+        var maderag3 = new THREE.BoxGeometry(50,50,10);
+        var maderam3 = new THREE.MeshLambertMaterial({color:0xFA9F69});
+        var madera3 = new THREE.Mesh(maderag3, maderam3);
+        scene.add(madera3);
+        madera3.position.set(-400,270,0);
+        madera3.receiveShadow = true;
+        madera3.castShadow = true;
+        madera3.rotation.set(0,1.57,0);
+
+        var maderag4 = new THREE.BoxGeometry(50,50,10);
+        var maderam4 = new THREE.MeshLambertMaterial({color:0xFA9F69});
+        var madera4 = new THREE.Mesh(maderag4, maderam4);
+        scene.add(madera4);
+        madera4.position.set(-400,70,0);
+        madera4.receiveShadow = true;
+        madera4.castShadow = true;
+        madera4.rotation.set(0,1.57,0);
+
+        var manijag = new THREE.BoxGeometry(10,40,5);
+        var manijam = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var manija = new THREE.Mesh(manijag, manijam);
+        scene.add(manija);
+        manija.position.set(-390,150,-50);
+        manija.receiveShadow = true;
+        manija.castShadow = true;
+        manija.rotation.set(0,1.57,0);
+
+        var manijag2 = new THREE.BoxGeometry(10,40,5);
+        var manijam2 = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var manija2 = new THREE.Mesh(manijag2, manijam2);
+        scene.add(manija2);
+        manija2.position.set(-385,150,-45);
+        manija2.receiveShadow = true;
+        manija2.castShadow = true;
+        manija2.scale.set(1,0.5,1);
+        manija2.rotation.set(1.57,1.57,0);
+
+        var sillong = new THREE.BoxGeometry(80,50,100);
+        var sillonm = new THREE.MeshLambertMaterial({color:0xFB2E19});
+        var sillon = new THREE.Mesh(sillong, sillonm);
+        scene.add(sillon);
+        sillon.position.set(-300,25,350);
+        sillon.rotation.set(0,0.67,0);
+        sillon.receiveShadow = true;
+        sillon.castShadow = true;
+
+        var respladog = new THREE.BoxGeometry(30,100,100);
+        var resplado = new THREE.Mesh(respladog,sillonm);
+        scene.add(resplado);
+        resplado.position.set(-335,50,380);
+        resplado.rotation.set(0,0.67,0);
+        resplado.receiveShadow = true;
+        resplado.castShadow = true;
+
+        var respladodelgadog = new THREE.SphereGeometry(50);
+        var respladodelgado = new THREE.Mesh(respladodelgadog,sillonm);
+        scene.add(respladodelgado);
+        respladodelgado.scale.set(0.4,1,1);
+        respladodelgado.position.set(-335,90,380);
+        respladodelgado.rotation.set(0,0.67,0);
+        respladodelgado.receiveShadow = true;
+        respladodelgado.castShadow = true;
+
+        var respladolateralg = new THREE.BoxGeometry(20,100,100);
+        var respladolateral = new THREE.Mesh(respladolateralg,sillonm);
+        scene.add(respladolateral);
+        respladolateral.position.set(-250,40,380);
+        respladolateral.rotation.set(0,2.25,0);
+        respladolateral.receiveShadow = true;
+        respladolateral.castShadow = true;
+
+        var respladolateral2g = new THREE.BoxGeometry(20,100,100);
+        var respladolateral2 = new THREE.Mesh(respladolateral2g,sillonm);
+        scene.add(respladolateral2);
+        respladolateral2.position.set(-320,40,300);
+        respladolateral2.rotation.set(0,2.25,0);
+        respladolateral2.receiveShadow = true;
+        respladolateral2.castShadow = true;
+
+        var respladodelgado2 = respladodelgado.clone();
+        scene.add(respladodelgado2);
+        respladodelgado2.position.set(-325,60,375);
+
+        var puffg = new THREE.SphereGeometry(40,30,40);
+        var puffm = new THREE.MeshLambertMaterial({color:0x11BD2E});
+        var puff = new THREE.Mesh(puffg, puffm);
+        scene.add(puff);
+        puff.scale.set(0.9,0.6,1);
+        puff.position.set(-200,10,160);
+        puff.castShadow = true;
+        puff.receiveShadow = true;
+
+        var puff2 = puff.clone();
+        scene.add(puff2);
+        puff2.position.set(-210,10,160);
+        puff2.scale.set(0.8,0.8,1);
+        puff2.rotation.set(0,0,0.67);
+
+        var colgantg = new THREE.TorusGeometry(600,1,20,40);
+        var colgantm = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var colgante = new THREE.Mesh(colgantg, colgantm);
+        scene.add(colgante);
+        colgante.position.set(0,400,0);
+        colgante.scale.set(1,0.1,1);
+        colgante.rotation.set(0,0.77,0);
+
+        var adorno1g = new THREE.BoxGeometry(60,5,50);
+        var adorno1m = new THREE.MeshLambertMaterial({color:0x16F3FA});
+        var adorno1 = new THREE.Mesh(adorno1g, adorno1m);
+        scene.add(adorno1);
+        adorno1.rotation.set(1.57,0,2.35);
+        adorno1.position.set(0,310,0);
+        adorno1.castShadow = true;
+
+        var adorno2g = new THREE.SphereGeometry(15);
+        var adorno2m = new THREE.MeshLambertMaterial({color:0x3E8AFB});
+        var adorno2 = new THREE.Mesh(adorno2g, adorno2m);
+        scene.add(adorno2);
+        adorno2.rotation.set(1.57,0,2.35);
+        adorno2.position.set(0,310,0);
+        adorno2.scale.set(1,0.3,1);
+        adorno2.castShadow = true;
+
+        var pínzag = new THREE.BoxGeometry(2,20,5);
+        var pinzam = new THREE.MeshLambertMaterial({color:0x096568});
+        var pinza = new THREE.Mesh(pínzag, pinzam);
+        scene.add(pinza);
+        pinza.position.set(22,330,-22);
+        pinza.rotation.set(0,1.57,0);
+
+        var pinza2 = pinza.clone();
+        scene.add(pinza2);
+        pinza2.position.set(-20,330,22);
+        pinza2.rotation.set(0,1.57,0);
+
+        var grupocolgante = new THREE.Group();
+        grupocolgante.add(adorno1,adorno2,pinza,pinza2);
+        scene.add(grupocolgante);
+
+        var grupocolgante2 = grupocolgante.clone();
+        scene.add(grupocolgante2);
+        grupocolgante2.position.set(60,0,-60);
+
+        var grupocolgante3 = grupocolgante.clone();
+        scene.add(grupocolgante3);
+        grupocolgante3.position.set(-60,0,60);
+
+        var grupocolgantes = new THREE.Group();
+        grupocolgantes.add(grupocolgante,grupocolgante2,grupocolgante3);
+        scene.add(grupocolgantes);
+
+        var grupocolgantes2 = grupocolgantes.clone();
+        scene.add(grupocolgantes2);
+        grupocolgantes2.position.set(180,10,-200);
+        grupocolgantes2.rotation.set(0.09,0,0);
+
+        var grupocolgantes3 = grupocolgantes.clone();
+        scene.add(grupocolgantes3);
+        grupocolgantes3.position.set(-170,10,200);
+        grupocolgantes3.rotation.set(-0.09,0,0);
+
+        var mesag = new THREE.BoxGeometry(100,5,100);
+        var mesam = new THREE.MeshLambertMaterial({color:0xFB8A72});
+        var mesa = new THREE.Mesh(mesag, mesam);
+        scene.add(mesa);
+        mesa.position.set(200,70,-200);
+
+        var patag = new THREE.CylinderGeometry(5,5,70);
+        var patam = new THREE.MeshLambertMaterial({color:0x07494B});
+        var pata1 = new THREE.Mesh(patag, patam);
+        scene.add(pata1);
+        pata1.position.set(170,35,-170);
+
+        var pata2 = pata1.clone();
+        scene.add(pata2);
+        pata2.position.set(230,35,-170);
+
+        var pata3 = pata1.clone();
+        scene.add(pata3);
+        pata3.position.set(170,35,-230);
+
+        var pata4 = pata1.clone();
+        scene.add(pata4);
+        pata4.position.set(230,35,-230);
+
+        var sillasg = new THREE.BoxGeometry(50,5,50);
+        var sillasm = new THREE.MeshLambertMaterial({color:0xEDF988});
+        var silla = new THREE.Mesh(sillasg, sillasm);
+        scene.add(silla);
+        silla.position.set(200,25,-300);
+
+        var respaldog = new THREE.BoxGeometry(50,50,5);
+        var respaldom = new THREE.MeshLambertMaterial({color:0xEDF988});
+        var respaldo = new THREE.Mesh(respaldog, respaldom);
+        scene.add(respaldo);
+        respaldo.position.set(200,50,-325);
+
+        var patag2 = new THREE.CylinderGeometry(3,3,40);
+        var patam2 = new THREE.MeshLambertMaterial({color:0x07494B});
+        var patasilla1 = new THREE.Mesh(patag2, patam2);
+        scene.add(patasilla1);
+        patasilla1.position.set(185,0,-285);
+
+        var patasilla2 = patasilla1.clone();
+        scene.add(patasilla2);
+        patasilla2.position.set(215,0,-285);
+
+        var patasilla3 = patasilla1.clone();
+        scene.add(patasilla3);
+        patasilla3.position.set(185,0,-315);
+
+        var patasilla4 = patasilla1.clone();
+        scene.add(patasilla4);
+        patasilla4.position.set(215,0,-315);
+
+        var gruposilla = new THREE.Group();
+        gruposilla.add(silla,respaldo,patasilla1,patasilla2,patasilla3,patasilla4);
+        scene.add(gruposilla);
+
+        var gruposilla2 = gruposilla.clone();
+        scene.add(gruposilla2);
+        gruposilla2.position.set(470,10,-200);
+        gruposilla2.rotation.set(0,2.35,0);
+
+        var sillasm2 = new THREE.MeshLambertMaterial({color:0xFA81E9});
+        var silla3 = new THREE.Mesh(sillasg, sillasm2);
+        scene.add(silla3);
+        silla3.position.set(200,35,-100);
+
+        var respaldo3 = new THREE.Mesh(respaldog, sillasm2);
+        scene.add(respaldo3);
+        respaldo3.position.set(200,60,-75);
+
+        var patasilla3_1 = new THREE.Mesh(patag2, patam2);
+        scene.add(patasilla3_1);
+        patasilla3_1.position.set(185,10,-85);
+
+        var patasilla3_2 = patasilla3_1.clone();
+        scene.add(patasilla3_2);
+        patasilla3_2.position.set(215,10,-85);
+
+        var patasilla3_3 = patasilla3_1.clone();
+        scene.add(patasilla3_3);
+        patasilla3_3.position.set(185,10,-115);
+
+        var patasilla3_4 = patasilla3_1.clone();
+        scene.add(patasilla3_4);
+        patasilla3_4.position.set(215,10,-115);
+
+        var sillasm4 = new THREE.MeshLambertMaterial({color:0x5F41F8});
+        var silla4 = new THREE.Mesh(sillasg, sillasm4);
+        scene.add(silla4);
+        silla4.position.set(300,35,-100);
+
+        var respaldo4 = new THREE.Mesh(respaldog, sillasm4);
+        scene.add(respaldo4);
+        respaldo4.position.set(300,60,-75);
+
+        var patasilla4_1 = new THREE.Mesh(patag2, patam2);
+        scene.add(patasilla4_1);
+        patasilla4_1.position.set(285,10,-85);
+
+        var patasilla4_2 = patasilla4_1.clone();
+        scene.add(patasilla4_2);
+        patasilla4_2.position.set(315,10,-85);
+
+        var patasilla4_3 = patasilla4_1.clone();
+        scene.add(patasilla4_3);
+        patasilla4_3.position.set(285,10,-115);
+
+        var patasilla4_4 = patasilla4_1.clone();
+        scene.add(patasilla4_4);
+        patasilla4_4.position.set(315,10,-115);
+
+        var gruposilla4 = new THREE.Group();
+        gruposilla4.add(silla4,respaldo4,patasilla4_1,patasilla4_2,patasilla4_3,patasilla4_4);
+        scene.add(gruposilla4);
+        gruposilla4.position.set(400,0,100);
+        gruposilla4.rotation.set(0,1.57,0);
+
+        var techog = new THREE.BoxGeometry(800,10,800);
+        var techom = new THREE.MeshLambertMaterial({color:0xBDB8C0});
+        var techo = new THREE.Mesh(techog, techom);
+        scene.add(techo);
+        techo.position.set(0,400,50);
+        techo.receiveShadow = true;
+        techo.castShadow = true;
+
+        var spotLight = new THREE.SpotLight(0xFFFFFF,1,1000,0.5,0.5);
+        spotLight.position.set(0,390,0);
+        spotLight.castShadow = true;
+        scene.add(spotLight);
+
+        var focog = new THREE.SphereGeometry(10);
+        var focom = new THREE.MeshLambertMaterial({color:0xEFFA89});
+        var foco = new THREE.Mesh(focog, focom);
+        scene.add(foco);
+        foco.position.set(0,390,0);
+
+    
+
+
+        hamm.addEventListener('mouseover', (event) => {  //Evento para cuando colocamos el cursor sobre la figura
+          document.body.style.cursor = 'pointer';
+          event.target.scale.set(1.2, 1.2, 1.2);
+        });
+       hamm.addEventListener('mouseout', (event) => {  //evento para cuando quitas el cursor de la figura, si no se agrega se le quedara el color que se puso en el mouseover
+           document.body.style.cursor = 'default';
+          event.target.scale.set(1, 1, 1);
+        });
+        hamm.addEventListener('click', (event) => { //evento para cuando se suelta el clic
+          var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };// se crea un objeto para "contener" las coordenadas
+          event.target.scale.set(1.5, 1.5, 1.5);
+          new TWEEN.Tween(coords) //Se declara el TWEEN, que permite que los movimientos sean fluidos y no de golpe 
+          .to({x:-30, y: 20, z: 60}) //se indican los cambios que se presentaran y en que variables, INDICA LA POSICIÓN FINAL DE MOVIMIENTO
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z )  //Se actualizan las vartiables en el objetivo del movimiento SE ACTUALIZAN LAS VARIABLES EN LA CAMARA
+          )
+          .start();//El movimiento inicia
+        });
+
+ interactionManager.add(hamm);
+
+
+ hamm2.addEventListener('mouseover', (event) => {  //Evento para cuando colocamos el cursor sobre la figura
+          document.body.style.cursor = 'pointer';
+          event.target.scale.set(1.2, 1.2, 1.2);
+        });
+       hamm2.addEventListener('mouseout', (event) => {  //evento para cuando quitas el cursor de la figura, si no se agrega se le quedara el color que se puso en el mouseover
+           document.body.style.cursor = 'default';
+          event.target.scale.set(1, 1, 1);
+        });
+        hamm2.addEventListener('click', (event) => { //evento para cuando se suelta el clic
+          var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };// se crea un objeto para "contener" las coordenadas
+          event.target.scale.set(1.5, 1.5, 1.5);
+          new TWEEN.Tween(coords) //Se declara el TWEEN, que permite que los movimientos sean fluidos y no de golpe 
+          .to({x:250, y: 100, z: -150}) //se indican los cambios que se presentaran y en que variables, INDICA LA POSICIÓN FINAL DE MOVIMIENTO
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z )  //Se actualizan las vartiables en el objetivo del movimiento SE ACTUALIZAN LAS VARIABLES EN LA CAMARA
+          )
+          .start();//El movimiento inicia
+        });
+ interactionManager.add(hamm2);
+
+        requestAnimationFrame(render);
+        function render() {
+            TWEEN.update();
+            interactionManager.update();
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+    </script>
+</body>
+
+</html>

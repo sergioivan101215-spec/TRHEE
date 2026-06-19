@@ -1,0 +1,805 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+    <title>Práctica</title>
+    <link rel="icon" type="image/png" href="./Assets/Pizza.webp"/>
+    <style>
+         body {
+             margin: 0;
+             overflow: hidden;
+         }
+         #boton {
+           position: absolute;
+           width: 100%;
+           height: 100%;
+           width: 100%;
+           height: 100%;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           text-align: center;
+           font-size: 40px;
+           cursor: pointer;
+         }
+         #activ {
+           color: rgba(9, 245, 9, 0.87);
+         }
+    </style>
+</head>
+<body>
+
+<!--Boton para activar el pointerlock-->
+<div id="boton">
+  Para comenzar da clic en + para activar <p id="activ">(  )</p>Mira al rededor usando el mouse, pulsa Esc para parar
+</div>
+
+<canvas id="myCanvas">
+    <!--El elemento HTML canvas se puede utilizar para dibujar gráficos a través de 
+        secuencias de comandos (por lo general JavaScript ).-->
+</canvas>
+
+<!-- Aquí va todo el código de three.js -->
+<!-- script type="importmap" importa las librerías necesarias para three.js-->
+<script type="importmap"> 
+    {
+        "imports":{
+            "three": "./js/three.module.js",
+            "three/PointerLockControls": "./js/PointerLockControls.js",
+            "three/interactive": "./js/three.interactive.js"
+        }
+}
+</script>
+<script type="module"> 
+// Mandar llamar a la librería
+    import * as THREE from 'three'; 
+    import { InteractionManager } from 'three/interactive';
+    import { TWEEN } from './js/tween.module.min.js';
+    import { PointerLockControls } from 'three/PointerLockControls';
+    import {RoundedBoxGeometry} from  "./js/RoundedBoxGeometry.js";
+
+//Renderer - Realiza una conexión entre el código y el canvas
+    var renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById('myCanvas'), antialias: true,
+    });
+    renderer.setPixelRatio(window.decivePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0xFFfA9F);
+
+//  Creando nueva escena - Es el espacio donde se colocan los objetos
+    var scene = new THREE.Scene();
+
+//Agregar una cámara de perspectiva
+    var camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000);
+    scene.add(camera);
+
+    //Settings de la cámara
+    camera.position.set(0, 20, 90);
+
+    // ── Redimensión de CANVAS ──────────────────────────────────────────
+    const sizes = {
+        width: window.innerWidth,
+        height: window.innerHeight,
+    };
+    const canvas = document.getElementById('myCanvas');
+    window.addEventListener('resize', () => {
+        sizes.width = window.innerWidth;
+        sizes.height = window.innerHeight;
+        camera.aspect = sizes.width / sizes.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(sizes.width, sizes.height);
+    });
+    // ──────────────────────────────────────────────────────────────────
+
+    // ── PointerLockControls ───────────────────────────────────────────
+    var controls = new PointerLockControls( camera, renderer.domElement );
+    document.getElementById('activ').onclick=()=>{
+      controls.lock();
+    }
+    controls.addEventListener( 'lock', function () {
+      boton.style.display = 'none';
+    } );
+    controls.addEventListener( 'unlock', function () {
+      boton.style.display = '';
+    } );
+
+    // Añadir interactionManager
+    var interactionManager = new InteractionManager(
+      renderer,
+      camera,
+      renderer.domElement
+    );
+    // ──────────────────────────────────────────────────────────────────
+
+    //// CRUZ CENTRAL QUE SIRVE DE GUIA
+    var geometryx = new THREE.BoxGeometry(.0075, .05, .075);
+    var materialx = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
+    var meshx = new THREE.Mesh(geometryx, materialx);
+    meshx.position.set(0,0,-1);
+    var geometryx2 = new THREE.BoxGeometry(.05, .0075, .075);
+    var meshx2 = new THREE.Mesh(geometryx2, materialx);
+    meshx2.position.set(0,0,-1);
+    camera.add( meshx, meshx2 );
+
+// Ejes
+var axesHelper = new THREE.AxesHelper(50);
+//scene.add(axesHelper);
+
+//grid
+var polargridHelper=new THREE.PolarGridHelper(50,16,50,25);
+//scene.add(polargridHelper);
+
+
+//light
+var light = new THREE.AmbientLight(0xffffff,0.5);
+light.position.set(-40,50,50);
+//scene.add(light);
+
+var light2 = new THREE.DirectionalLight(0xffffff,1);
+light2.position.set(-30,20,20);
+light2.target.position.set(0,0,0);
+scene.add(light2);
+
+var light3 = new THREE.DirectionalLight(0xffffff,0.5);
+light3.position.set(30,20,20);
+light3.target.position.set(0,0,0);
+scene.add(light3);
+
+var light3 = new THREE.HemisphereLight(0xffffff,0.4);
+light.position.set(0,50,0);
+//scene.add(light3);
+
+var pl = new THREE.PointLight(0xf000f0,3,20,0.9);
+pl.position.set(-15,18,0);
+//scene.add(pl);
+var helper1 = new THREE.PointLightHelper(pl);
+//scene.add(helper1);
+
+
+//SOMBRA
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
+light2.castShadow = true;
+light2.shadow.bias = 0.01;
+light2.shadow.mapSize.width = 1024;
+light2.shadow.mapSize.height = 1024;
+
+light2.shadow.camera.top = 35;
+light2.shadow.camera.bottom = -25;
+light2.shadow.camera.left =-50;
+light2.shadow.camera.right = 50;
+light2.shadow.camera.visible = true;
+
+
+var directionalHelper = new THREE.CameraHelper(light2.shadow.camera);
+//scene.add(directionalHelper);
+
+
+// Espacio para colocar los objetos
+var base = new THREE.BoxGeometry(700,0.5,700);
+
+var colorbase = new THREE.MeshLambertMaterial({color:0x785412});
+var texturasuelo=new THREE.TextureLoader().load("./Assets/pisom.jpg");
+var materialTs=new THREE.MeshLambertMaterial({map:texturasuelo});
+texturasuelo.wrapS=THREE.RepeatWraaping;
+texturasuelo.wrapT=THREE.RepeatWraaping;
+texturasuelo.repeat.set(6,6);
+
+
+
+var suelo = new THREE.Mesh(base,materialTs);
+
+scene.add(suelo);
+////////////////////
+suelo.receiveShadow = true;
+var pareda = new THREE.BoxGeometry(700,150,0.5);
+var texturapared=new THREE.TextureLoader().load("./Assets/pared.jpg");
+var materiala=new THREE.MeshLambertMaterial({map:texturapared});
+texturapared.wrapS=THREE.RepeatWraaping;
+texturapared.wrapT=THREE.RepeatWraaping;
+texturapared.repeat.set(2,2);
+var pared = new THREE.Mesh(pareda,materiala);
+pared.position.set(0,75,-350);
+scene.add(pared);
+
+
+
+var pared2 = new THREE.BoxGeometry(700,250,0.5);
+var texturaparedc=new THREE.TextureLoader().load("./Assets/pael.jpg");
+var material1=new THREE.MeshLambertMaterial({map:texturaparedc});
+texturaparedc.wrapS=THREE.RepeatWraaping;
+texturaparedc.wrapT=THREE.RepeatWraaping;
+texturaparedc.repeat.set(2,2);
+
+var paredc = new THREE.Mesh(pared2,material1);
+paredc.position.set(0,275,-350);
+scene.add(paredc);
+
+
+var parizq = paredc.clone();
+parizq.rotation.set(0,-1.5756,0);
+parizq.position.set(-347,273,0);
+scene.add(parizq);
+
+
+var paredd = new THREE.BoxGeometry(200,250,0.5);
+var texturaparedm=new THREE.TextureLoader().load("./Assets/pael.jpg");
+var material2=new THREE.MeshLambertMaterial({map:texturaparedm});
+texturaparedm.wrapS=THREE.RepeatWraaping;
+texturaparedm.wrapT=THREE.RepeatWraaping;
+texturaparedm.repeat.set(1,2);
+texturaparedm.offset.x=-1;
+texturaparedm.offset.y=-10;
+var paredn = new THREE.Mesh(paredd,material2);
+paredn.position.set(349,275,-251);
+paredn.rotation.set(0,1.5756,0);
+scene.add(paredn);
+
+var pareddd = new THREE.BoxGeometry(300,250,0.5);
+var texturaparedo=new THREE.TextureLoader().load("./Assets/pael.jpg");
+var material3=new THREE.MeshLambertMaterial({map:texturaparedm});
+texturaparedo.wrapS=THREE.RepeatWraaping;
+texturaparedo.wrapT=THREE.RepeatWraaping;
+texturaparedo.repeat.set(1,2);
+texturaparedo.offset.x=-1;
+texturaparedo.offset.y=-10;
+
+var paredx = new THREE.Mesh(pareddd,material3);
+paredx.position.set(351,274,200);
+paredx.rotation.set(0,1.5756,0);
+scene.add(paredx);
+
+
+var pareddd = new THREE.BoxGeometry(202,150,0.5);
+var texturaparedo=new THREE.TextureLoader().load("./Assets/pael.jpg");
+var material3=new THREE.MeshLambertMaterial({map:texturaparedm});
+texturaparedo.wrapS=THREE.RepeatWraaping;
+texturaparedo.wrapT=THREE.RepeatWraaping;
+texturaparedo.repeat.set(1,1);
+texturaparedo.offset.x=-1;
+texturaparedo.offset.y=-10;
+
+
+var paredx = new THREE.Mesh(pareddd,material3);
+paredx.position.set(350,325,-50);
+paredx.rotation.set(0,1.5756,0);
+scene.add(paredx);
+
+
+
+
+var pelota = new THREE.SphereGeometry(20,20,20);
+var texturapelota=new THREE.TextureLoader().load("./Assets/pelota.jpg");
+var materialp=new THREE.MeshLambertMaterial({map:texturapelota});
+texturapelota.wrapS=THREE.RepeatWraaping;
+texturapelota.wrapT=THREE.RepeatWraaping;
+texturapelota.repeat.set(2,1);
+
+
+var pelotas = new THREE.Mesh(pelota,materialp);
+pelotas.position.set(110,20,20);
+scene.add(pelotas);
+
+
+var camtabla = new THREE.BoxGeometry(10,10,100);
+var tcama= new THREE.MeshLambertMaterial({color:0xE0E0E0});
+var cama = new THREE.Mesh(camtabla,tcama);
+
+
+scene.add(cama);
+
+var c1 = cama.clone();
+c1.position.set(32.5,0,54);
+c1.rotation.set(0,1.5756,0);
+c1.scale.set(1,1,0.75);
+scene.add(c1);
+
+var c2 = cama.clone();
+c2.position.set(32.5,0,-54);
+c2.rotation.set(0,1.5756,0);
+c2.scale.set(1,1,0.75);
+scene.add(c2);
+
+var c3 = cama.clone();
+c3.position.set(65,0,0);
+scene.add(c3);
+
+var c4 = cama.clone();
+c4.rotation.set(1.5756,0,0);
+c4.scale.set(0.5,0.5,0.75);
+c4.position.set(65,10,60);
+scene.add(c4);
+
+var c5 = cama.clone();
+c5.rotation.set(1.5756,0,0);
+c5.scale.set(0.5,0.5,0.75);
+c5.position.set(65,10,-60);
+scene.add(c5);
+
+var c6 = cama.clone();
+c6.rotation.set(1.5756,0,0);
+c6.scale.set(0.5,0.5,0.75);
+c6.position.set(3,10,-60);
+scene.add(c6);
+
+var c7 = cama.clone();
+c7.rotation.set(1.5756,0,0);
+c7.scale.set(0.5,0.5,0.75);
+c7.position.set(3,10,60);
+scene.add(c7);
+
+var par2 = pared.clone();
+par2.rotation.set(0,1.5756,0);
+par2.position.set(350,75,0);
+scene.add(par2);
+
+var par2 = pared.clone();
+par2.rotation.set(0,1.5756,0);
+par2.position.set(-350,75,0);
+scene.add(par2);
+ 
+
+var col = new RoundedBoxGeometry(80,20,120,10,1.5);
+var tcol= new THREE.MeshLambertMaterial({color:0x0567A6});
+var colchon = new THREE.Mesh(col,tcol);
+scene.add(colchon);
+colchon.position.set(32.5,15,0);
+
+var al = new RoundedBoxGeometry (35,20,10,20,4.5);
+var tal = new THREE.MeshLambertMaterial({color:0x693813});
+var almoa = new THREE.Mesh(al,tal);
+scene.add(almoa);
+almoa.rotation.set(-0.7878,0,0);
+almoa.position.set(32.5,35,-50);
+
+var ccompleta = new THREE.Group();
+ccompleta.add(cama,c1,c2,c3,c4,c5,c6,c7,colchon,almoa);
+scene.add(ccompleta);
+ccompleta.position.set(140,70,-190);
+ccompleta.scale.set(2.4,2.5,2.5);
+
+
+var alf = new RoundedBoxGeometry(180,2,300,10,30);
+var talf = new THREE.MeshLambertMaterial({color:0x0066FF});
+var alfombra = new THREE.Mesh(alf,talf);
+scene.add(alfombra);
+alfombra.position.set(-40,2,80);
+
+
+
+// estructura
+var mub = new THREE.BoxGeometry(90,90,45);
+var tmub = new THREE.MeshLambertMaterial({color:0xffffff});
+var mueble = new THREE.Mesh(mub,tmub);
+scene.add(mueble);
+mueble.position.set(-220,45,220);
+
+// material cajones
+var tcaj = new THREE.MeshLambertMaterial({color:0xD9D9D9});
+
+// cajon 1
+var caj = new THREE.BoxGeometry(72,18,4);
+var cajon1 = new THREE.Mesh(caj,tcaj);
+scene.add(cajon1);
+cajon1.position.set(-220,70,244);
+
+// cajon 2
+var cajon2 = cajon1.clone();
+scene.add(cajon2);
+cajon2.position.set(-220,45,244);
+
+// cajon 3
+var cajon3 = cajon1.clone();
+scene.add(cajon3);
+cajon3.position.set(-220,20,244);
+
+// perillas
+var per = new THREE.SphereGeometry(2,20,20);
+var tper = new THREE.MeshLambertMaterial({color:0xffffff});
+
+// cajon 1
+var p1 = new THREE.Mesh(per,tper);
+scene.add(p1);
+p1.position.set(-235,70,247);
+
+var p2 = p1.clone();
+scene.add(p2);
+p2.position.set(-205,70,247);
+
+// cajon 2
+var p3 = p1.clone();
+scene.add(p3);
+p3.position.set(-235,45,247);
+
+var p4 = p1.clone();
+scene.add(p4);
+p4.position.set(-205,45,247);
+
+// cajon 3
+var p5 = p1.clone();
+scene.add(p5);
+p5.position.set(-235,20,247);
+
+var p6 = p1.clone();
+scene.add(p6);
+p6.position.set(-205,20,247);
+
+var mmcom = new THREE.Group();
+mmcom.add(p1,p2,p3,p4,p5,p6,cajon1,cajon2,cajon3,mueble);
+scene.add(mmcom);
+mmcom.position.set(300,3,-740);
+mmcom.scale.set(2.4,2.5,2);
+
+
+
+var tblanco = new THREE.MeshLambertMaterial({color:0xffffff});
+var tgris = new THREE.MeshLambertMaterial({color:0xE0E0E0});
+var tmadera = new THREE.MeshLambertMaterial({color:0xB85A2B});
+
+
+// tapa superior
+var mg = new THREE.BoxGeometry(45,5,40);
+var mesa = new THREE.Mesh(mg,tblanco);
+//scene.add(mesa);
+mesa.position.set(215,42,-170);
+
+// cuerpo lateral izquierdo
+var lat1g = new THREE.BoxGeometry(5,40,35);
+var lat1 = new THREE.Mesh(lat1g,tblanco);
+//scene.add(lat1);
+lat1.position.set(195,22,-170);
+
+// cuerpo lateral derecho
+var lat2 = lat1.clone();
+//scene.add(lat2);
+lat2.position.set(235,22,-170);
+
+// fondo
+var fondog = new THREE.BoxGeometry(35,40,5);
+var fondo = new THREE.Mesh(fondog,tblanco);
+//scene.add(fondo);
+fondo.position.set(215,22,-185);
+
+// repisa inferior
+var repg = new THREE.BoxGeometry(35,4,35);
+var repisa = new THREE.Mesh(repg,tgris);
+//scene.add(repisa);
+repisa.position.set(215,5,-170);
+
+// cajon
+var cajg = new THREE.BoxGeometry(34,12,34);
+var cajon = new THREE.Mesh(cajg,tgris);
+//scene.add(cajon);
+cajon.position.set(215,28,-170);
+
+// perilla
+var perg = new THREE.SphereGeometry(2,20,20);
+var perilla = new THREE.Mesh(perg,tmadera);
+//scene.add(perilla);
+perilla.position.set(215,28,-152);
+
+
+// base roja
+var baseg = new THREE.SphereGeometry(10,20,20);
+var tbase = new THREE.MeshLambertMaterial({color:0xC94A22});
+var baseL = new THREE.Mesh(baseg,tbase);
+//scene.add(baseL);
+baseL.scale.set(1,1.2,1);
+baseL.position.set(215,57,-170);
+
+// cuello
+var cuellog = new THREE.CylinderGeometry(2,2,8);
+var cuello = new THREE.Mesh(cuellog,tgris);
+//scene.add(cuello);
+cuello.position.set(215,68,-170);
+
+// pantalla
+var pang = new THREE.CylinderGeometry(12,16,18,20);
+var pantalla = new THREE.Mesh(pang,tblanco);
+//scene.add(pantalla);
+pantalla.position.set(215,80,-170);
+
+var gmueble = new THREE.Group();
+
+gmueble.add(mesa,lat1,lat2,fondo,repisa,cajon,perilla);
+
+scene.add(gmueble);
+
+gmueble.position.set(-600,0,230);
+gmueble.scale.set(3,3,3);
+
+var glampara = new THREE.Group();
+
+glampara.add(baseL,cuello,pantalla);
+
+scene.add(glampara);
+glampara.position.set(-600,0,230);
+glampara.scale.set(3,3,3);
+
+
+
+// marco exterior
+var v1g = new THREE.BoxGeometry(80,140,4);
+var tblanco = new THREE.MeshLambertMaterial({color:0xffffff});
+var marco = new THREE.Mesh(v1g,tblanco);
+//scene.add(marco);
+marco.position.set(260,190,-349);
+
+// vidrio
+var v2g = new THREE.BoxGeometry(62,105,2);
+var tvidrio = new THREE.MeshLambertMaterial({color:0xFFFFFF,transparent:true,opacity:0.45});
+
+var vidrio = new THREE.Mesh(v2g,tvidrio);
+vidrio.position.set(260,180,-347);
+//scene.add(vidrio);
+vidrio.position.set(260,180,-347);
+
+// parte superior decorativa
+var v3g = new THREE.BoxGeometry(95,10,8);
+var corona = new THREE.Mesh(v3g,tblanco);
+//scene.add(corona);
+corona.position.set(260,265,-348);
+
+// persiana
+var v4g = new THREE.BoxGeometry(60,55,3);
+var tper = new THREE.MeshLambertMaterial({color:0xFFFFFF});
+var persiana = new THREE.Mesh(v4g,tper);
+//scene.add(persiana);
+persiana.position.set(260,205,-346);
+
+// base inferior
+var v5g = new THREE.BoxGeometry(90,8,8);
+var baseven = new THREE.Mesh(v5g,tblanco);
+//scene.add(baseven);
+baseven.position.set(260,112,-348);
+
+var gventana = new THREE.Group();
+
+gventana.add(marco,vidrio,corona,persiana,baseven);
+
+scene.add(gventana);
+gventana.rotation.set(0,-1.5756,0)
+gventana.position.set(0,-30,-700);
+gventana.scale.set(2.5,1.5,1);
+
+
+
+// VENTILADOR 
+
+// base techo
+var vg1 = new THREE.CylinderGeometry(4,4,6);
+var gris = new THREE.MeshLambertMaterial({color:0xBDBDBD});
+var basev = new THREE.Mesh(vg1,gris);
+
+
+// tubo
+var vg2 = new THREE.CylinderGeometry(1.5,1.5,18);
+var tubo = new THREE.Mesh(vg2,gris);
+tubo.position.set(0,10,0);
+
+// centro
+var vg3 = new THREE.SphereGeometry(6,20,20);
+var centrov = new THREE.Mesh(vg3,gris);
+centrov.scale.set(1,0.7,1);
+
+
+// aspas
+var vg4 = new THREE.BoxGeometry(45,1.5,8);
+var madera = new THREE.MeshLambertMaterial({color:0x8B5A2B});
+
+var aspa1 = new THREE.Mesh(vg4,madera);
+aspa1.position.set(22,0,0);
+
+var aspa2 = aspa1.clone();
+aspa2.position.set(-22,0,0);
+
+var aspa3 = aspa1.clone();
+aspa3.rotation.set(0,1.57,0);
+aspa3.position.set(0,0,22);
+
+var aspa4 = aspa3.clone();
+aspa4.position.set(0,0,-22);
+
+// grupo
+var gventilador = new THREE.Group();
+
+gventilador.add(basev,tubo,centrov,aspa1,aspa2,aspa3,aspa4);
+
+scene.add(gventilador);
+gventilador.scale.set(2.7,2.7,2.7);
+gventilador.position.set(0,400,0);
+
+
+var cab = new THREE.SphereGeometry(5,20,10);
+var material1= new THREE.MeshLambertMaterial({color:0xffbf7c});
+var cabeza= new THREE.Mesh(cab,material1);
+//scene.add(cabeza);
+cabeza.scale.set(1,1.05,0.8);
+
+var oreja1= new THREE.Mesh(cab,material1);
+oreja1.position.set(4,0,0);
+oreja1.scale.set(0.5,0.4,0.25);
+//scene.add(oreja1);
+
+var oreja2= new THREE.Mesh(cab,material1);
+oreja2.position.set(-4,0,0);
+oreja2.scale.set(0.5,0.4,0.25);
+//scene.add(oreja2);
+
+var material2= new THREE.MeshLambertMaterial({color:0xffffff});
+var ojo= new THREE.Mesh(cab,material2);
+//scene.add(ojo);
+ojo.scale.set(0.3,0.3,0.1);
+ojo.position.set(-2,1,3.4);
+ojo.rotation.set(0,-0.4,0);
+
+var ojo2= new THREE.Mesh(cab,material2);
+//scene.add(ojo2);
+ojo2.scale.set(0.3,0.3,0.1);
+ojo2.position.set(2,1,3.4);
+ojo2.rotation.set(0,0.4,0);
+
+
+var material3= new THREE.MeshLambertMaterial({color:0x21a745});
+
+var pup= new THREE.Mesh(cab,material3);
+//scene.add(pup);
+pup.scale.set(0.15,0.15,0.1);
+pup.position.set(1.5,1,3.7);
+
+var pup1= new THREE.Mesh(cab,material3);
+//scene.add(pup1);
+pup1.scale.set(0.15,0.15,0.1);
+pup1.position.set(-1.5,1,3.7);
+
+var rostro = new THREE.Group();
+rostro.add(cabeza,ojo,ojo2,oreja1,oreja2,pup,pup1);
+//scene.add(rostro);
+rostro.position.set(0,20,0);
+
+
+var cuer = new THREE.CylinderGeometry(4,8,12,20,20);
+var cuerpo= new THREE.Mesh(cuer,material2);
+//scene.add(cuerpo);
+cuerpo.position.set(0,10.3,0);
+cuerpo.scale.set(0.9,1,0.7);
+
+var material4= new THREE.MeshLambertMaterial({color:0xff0000});
+var cab = new THREE.SphereGeometry(4,20,20);
+var cabello= new THREE.Mesh(cab,material4);
+//scene.add(cabello);
+cabello.position.set(0,23,-0.2);
+cabello.scale.set(1,0.6,0.8);
+
+var cabello2= new THREE.Mesh(cab,material4);
+//scene.add(cabello2);
+cabello2.position.set(0,21.1,-1);
+cabello2.scale.set(1,1,1);
+
+var bra = new THREE.SphereGeometry(5,20,10);
+var brazo= new THREE.Mesh(cab,material2);
+//scene.add(brazo);
+brazo.scale.set(0.5,1,0.5 );
+brazo.position.set(-5,12,1); 
+brazo.rotation.set(-0.4,0,0);
+
+var brazo1= new THREE.Mesh(cab,material2);
+//scene.add(brazo1);
+brazo1.scale.set(0.5,1,0.5 );
+brazo1.position.set(5,12,1); 
+brazo1.rotation.set(-0.4,0,0);
+
+var brazo2= new THREE.Mesh(cab,material2);
+//scene.add(brazo2);
+brazo2.scale.set(0.45,1,0.5 );
+brazo2.position.set(-2,10.1,3.5); 
+brazo2.rotation.set(0,-0.4,-1.6);
+
+var brazo2= new THREE.Mesh(cab,material2);
+//scene.add(brazo2);
+brazo2.scale.set(0.45,1,0.5 );
+brazo2.position.set(2,10.1,3.5); 
+brazo2.rotation.set(0,0.4,1.6);
+
+
+
+var material5= new THREE.MeshLambertMaterial({color:0xffcd00});
+var cod = new THREE.CylinderGeometry(1.2,2,4,20,20);
+var codi= new THREE.Mesh(cod,material5);
+//scene.add(codi);
+codi.position.set(-1.1,10.2,5);
+codi.scale.set(0.9,1,0.6);
+codi.rotation.set(0,-0.45,-1.6);
+
+var codi1= new THREE.Mesh(cod,material5);
+//scene.add(codi1);
+codi1.position.set(1.1,10.2,5);
+codi1.scale.set(0.9,1,0.6);
+codi1.rotation.set(0,0.45,1.6);
+
+
+var material5= new THREE.MeshLambertMaterial({color:0xff2000});
+var som = new THREE.TorusGeometry(5,2,20,20);
+var sombre= new THREE.Mesh(som,material5);
+//scene.add(sombre);
+sombre.position.set(0,23,-0.8);
+sombre.scale.set(1,1,0.3);
+sombre.rotation.set(0.8,0,0);
+
+
+var som1 = new THREE.TorusGeometry(4,1.8,5,5);
+var sombre1= new THREE.Mesh(som1,material5);
+//scene.add(sombre1);
+sombre1.position.set(0,23,-2);
+sombre1.scale.set(1,1,1);
+sombre1.rotation.set(0.8,0,0);
+
+
+var figura = new THREE.Group();
+
+figura.add(rostro,cuerpo,cabello,cabello2,brazo,brazo1,brazo2,codi,codi1,sombre,sombre1);
+scene.add(figura);
+
+var figura2 = figura.clone();
+figura2.position.set(-160,220,-260);
+scene.add(figura2);
+
+figura.addEventListener('mouseover', (event) => {  //Evento para cuando colocamos el cursor sobre la figura
+          document.body.style.cursor = 'pointer';
+          event.target.scale.set(1.2, 1.2, 1.2);
+        });
+       figura.addEventListener('mouseout', (event) => {  //evento para cuando quitas el cursor de la figura, si no se agrega se le quedara el color que se puso en el mouseover
+           document.body.style.cursor = 'default';
+          event.target.scale.set(1, 1, 1);
+        });
+        figura.addEventListener('click', (event) => { //evento para cuando se suelta el clic
+          var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };// se crea un objeto para "contener" las coordenadas
+          event.target.scale.set(1.5, 1.5, 1.5);
+          new TWEEN.Tween(coords) //Se declara el TWEEN, que permite que los movimientos sean fluidos y no de golpe 
+          .to({x:0, y: 25, z: 50}) //se indican los cambios que se presentaran y en que variables, INDICA LA POSICIÓN FINAL DE MOVIMIENTO
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z )  //Se actualizan las vartiables en el objetivo del movimiento SE ACTUALIZAN LAS VARIABLES EN LA CAMARA
+          )
+          
+          .start();//El movimiento inicia
+        });
+
+ interactionManager.add(figura);
+
+figura2.addEventListener('mouseover', (event) => {  //Evento para cuando colocamos el cursor sobre la figura
+          document.body.style.cursor = 'pointer';
+          event.target.scale.set(1.2, 1.2, 1.2);
+        });
+       figura2.addEventListener('mouseout', (event) => {  //evento para cuando quitas el cursor de la figura, si no se agrega se le quedara el color que se puso en el mouseover
+           document.body.style.cursor = 'default';
+          event.target.scale.set(1, 1, 1);
+        });
+        figura2.addEventListener('click', (event) => { //evento para cuando se suelta el clic
+          var coords = { x: camera.position.x, y: camera.position.y, z: camera.position.z };// se crea un objeto para "contener" las coordenadas
+          event.target.scale.set(1.5, 1.5, 1.5);
+          new TWEEN.Tween(coords) //Se declara el TWEEN, que permite que los movimientos sean fluidos y no de golpe 
+          .to({x:-180, y: 230, z: -250}) //se indican los cambios que se presentaran y en que variables, INDICA LA POSICIÓN FINAL DE MOVIMIENTO
+          .onUpdate(() => camera.position.set(coords.x,coords.y,coords.z )  //Se actualizan las vartiables en el objetivo del movimiento SE ACTUALIZAN LAS VARIABLES EN LA CAMARA
+          )
+          .start();//El movimiento inicia
+        });
+
+ interactionManager.add(figura2);
+
+//🎰🎰Rendering y animación
+    requestAnimationFrame(render);
+    function render() {
+
+    TWEEN.update();
+    interactionManager.update();
+
+    //🪄🪄 Animación
+    gventilador.rotation.y += 0.15;
+
+    //Llamado para renderizar y volver a llamar a la misma función (render)
+    renderer.render(scene, camera);
+    requestAnimationFrame(render);
+    }
+</script>
+</body>
+</html>
